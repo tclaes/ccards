@@ -16,7 +16,12 @@ import org.springframework.test.context.ActiveProfiles;
  * datasource and mail settings point at the compose stack, but no connection
  * is opened.
  */
-@SpringBootTest(webEnvironment = WebEnvironment.NONE)
+@SpringBootTest(webEnvironment = WebEnvironment.NONE, properties = {
+	// Pin the placeholders so a developer's exported POSTGRES_* / MAILPIT_* variables
+	// (or an .env loaded by Nx) cannot change what these tests assert.
+	"POSTGRES_PORT=5432", "POSTGRES_DB=ccards", "POSTGRES_USER=ccards",
+	"POSTGRES_PASSWORD=ccards", "MAILPIT_SMTP_PORT=1025"
+})
 @ActiveProfiles("local")
 class LocalProfileTests {
 
