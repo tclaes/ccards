@@ -21,6 +21,13 @@
       "options": {
         "command": "./mvnw spring-boot:run",
         "cwd": "apps/api"
+      },
+      "configurations": {
+        "local": {
+          "env": {
+            "SPRING_PROFILES_ACTIVE": "local"
+          }
+        }
       }
     },
     "build": {

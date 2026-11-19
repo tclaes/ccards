@@ -54,3 +54,6 @@ Thumbs.db
 .angular
 
 __screenshots__/
+
+# local dev stack credentials
+apps/api/.env

@@ -89,6 +89,33 @@ npm run format:check   # Prettier check
 npm run format         # Prettier write
 ```
 
+## Local stack (PostgreSQL + Mailpit)
+
+Needs Docker with Compose v2. The stack lives in `apps/api/compose.yaml`:
+
+```sh
+cd apps/api
+docker compose up -d       # start PostgreSQL and Mailpit
+docker compose down        # stop (data is kept in the `ccards_postgres-data` volume)
+docker compose down -v     # stop and wipe the database
+```
+
+| Service    | Host address          | Notes                                        |
+| ---------- | --------------------- | -------------------------------------------- |
+| PostgreSQL | `localhost:5432`      | database/user/password: `ccards` (dev only)  |
+| Mailpit    | SMTP `localhost:1025` | catches all mail, nothing leaves the machine |
+| Mailpit UI | http://localhost:8025 | read the captured mail                       |
+
+Ports are bound to `127.0.0.1` only. To change ports or credentials, copy `apps/api/.env.example` to `apps/api/.env` (git-ignored). Compose and `nx serve` both read it. If a port is taken (for example another PostgreSQL on 5432), compose fails with "port is already allocated"; set `POSTGRES_PORT` in `.env`. Set credential overrides before the first `docker compose up`: PostgreSQL applies `POSTGRES_USER`/`POSTGRES_PASSWORD`/`POSTGRES_DB` only to an empty data directory, so after changing them run `docker compose down -v` to recreate the database (this deletes its data).
+
+Start the API against the stack with the Spring `local` profile:
+
+```sh
+npx nx serve api --configuration=local
+```
+
+With `local`, `/api/health` also reflects the database: it returns 503 `{"status":"DOWN"}` while PostgreSQL is unreachable. Without the profile (`npx nx serve api`, `npx nx test api`) no database or mail server is needed.
+
 ## Specs
 
 Behavior and planned changes are tracked with [OpenSpec](https://github.com/Fission-AI/OpenSpec) in `openspec/`.
