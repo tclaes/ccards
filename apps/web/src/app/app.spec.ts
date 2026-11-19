@@ -1,34 +1,36 @@
-import { TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
-import { RouterTestingHarness } from '@angular/router/testing';
 import { App } from './app';
 import { appRoutes } from './app.routes';
 
 describe('App shell', () => {
+  let fixture: ComponentFixture<App>;
+  let router: Router;
+
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [App],
       providers: [provideRouter(appRoutes)],
     }).compileComponents();
+
+    fixture = TestBed.createComponent(App);
+    router = TestBed.inject(Router);
   });
 
-  it('should create the app', () => {
-    const fixture = TestBed.createComponent(App);
-    expect(fixture.componentInstance).toBeTruthy();
-  });
+  async function navigateTo(url: string): Promise<HTMLElement> {
+    await router.navigateByUrl(url);
+    await fixture.whenStable();
+    return fixture.nativeElement as HTMLElement;
+  }
 
-  it('renders the placeholder page on the root route', async () => {
-    const harness = await RouterTestingHarness.create();
-    await harness.navigateByUrl('/');
-    expect(harness.routeNativeElement?.querySelector('h1')?.textContent).toBe(
-      'ccards',
-    );
+  it('renders the placeholder page in the shell on the root route', async () => {
+    const shell = await navigateTo('/');
+    expect(shell.querySelector('h1')?.textContent).toBe('ccards');
   });
 
   it('redirects unknown routes to the root', async () => {
-    const harness = await RouterTestingHarness.create();
-    await harness.navigateByUrl('/does-not-exist');
-    expect(TestBed.inject(Router).url).toBe('/');
-    expect(harness.routeNativeElement?.querySelector('h1')).not.toBeNull();
+    const shell = await navigateTo('/does-not-exist');
+    expect(router.url).toBe('/');
+    expect(shell.querySelector('h1')?.textContent).toBe('ccards');
   });
 });
