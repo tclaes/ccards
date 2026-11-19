@@ -1,0 +1,13 @@
+# Profile `local`: connects to the compose stack in apps/api/compose.yaml.
+# Values default to .env.example; export the same variables to override.
+spring:
+  autoconfigure:
+    # Re-enable what the default profile excludes.
+    exclude: ''
+  datasource:
+    url: jdbc:postgresql://localhost:${POSTGRES_PORT:5432}/${POSTGRES_DB:ccards}
+    username: ${POSTGRES_USER:ccards}
+    password: ${POSTGRES_PASSWORD:ccards}
+  mail:
+    host: localhost
+    port: ${MAILPIT_SMTP_PORT:1025}
