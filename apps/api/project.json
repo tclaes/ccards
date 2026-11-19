@@ -16,7 +16,7 @@
       "executor": "nx:run-commands",
       "continuous": true,
       "readyWhen": {
-        "url": "http://localhost:8080/api/health"
+        "url": "http://localhost:{env.SERVER_PORT ?? 8080}/api/health"
       },
       "options": {
         "command": "./mvnw spring-boot:run",

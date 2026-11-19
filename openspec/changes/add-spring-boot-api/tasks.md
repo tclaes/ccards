@@ -3,7 +3,7 @@
 ## 1. Project scaffold
 
 - [x] 1.1 With the user's OK for the download, fetch a Spring Initializr zip (Maven, Java 21, Boot 4.2.0, deps web + actuator, group `com.ccards`, artifact `api`, package `com.ccards.api`) into the scratchpad, unzip it into `apps/api`, and remove `HELP.md`. Verify that `apps/api/pom.xml`, `mvnw`, `mvnw.cmd` and `.mvn/wrapper/maven-wrapper.properties` exist, and that the pom has parent `spring-boot-starter-parent` 4.2.0 and `java.version` 21
-- [x] 1.2 Make `mvnw` executable in git (`git update-index --chmod=+x apps/api/mvnw`) and add `apps/api/target/` (Maven output) to `.gitignore`. Verify `git ls-files -s apps/api/mvnw` shows mode `100755` and that `git status` does not list `target/` after a build
+- [x] 1.2 Make `mvnw` executable in git (`git update-index --chmod=+x apps/api/mvnw`) and add `/apps/api/target/` (Maven output) to `.gitignore`. Verify `git ls-files -s apps/api/mvnw` shows mode `100755` and that `git status` does not list `target/` after a build
 - [x] 1.3 Run `./mvnw -B -q validate` in `apps/api`. Verify the wrapper downloads Maven and exits 0 with no global `mvn` installed
 
 ## 2. Health endpoint and configuration
@@ -17,7 +17,7 @@
 
 ## 4. Nx integration
 
-- [x] 4.1 Add `apps/api/project.json` (name `api`, `projectType: application`) with `nx:run-commands` targets `serve` (continuous, `readyWhen` on the "Started ApiApplication" log line), `build` (`package -DskipTests`, outputs `{projectRoot}/target`, cached, inputs as in D2) and `test` (cached), all with `cwd: apps/api`. Verify that `npx nx show projects` lists `api` and `web`, and that `npx nx show project api` shows the three targets
+- [x] 4.1 Add `apps/api/project.json` (name `api`, `projectType: application`) with `nx:run-commands` targets `serve` (continuous, target-level `readyWhen.url` on the health endpoint, port from `SERVER_PORT` with fallback 8080), `build` (`package -DskipTests`, outputs `{projectRoot}/target`, cached, inputs as in D2) and `test` (cached), all with `cwd: apps/api`. Verify that `npx nx show projects` lists `api` and `web`, and that `npx nx show project api` shows the three targets
 - [x] 4.2 Verify `npx nx serve api` starts on port 8080 and `curl localhost:8080/api/health` returns `{"status":"UP"}`. While it runs, start a second `npx nx serve api` and check that it fails and reports that port 8080 is in use
 - [x] 4.3 Verify that `npx nx test api` exits 0 and that a second run with no changes is served from the Nx cache
 - [x] 4.4 Verify that `npx nx build api` produces `apps/api/target/api-*.jar`, that `java -jar` on it serves `/api/health` → `{"status":"UP"}`, and that `npx nx lint web` and `npx nx test web` still pass (nothing broken for `web`)

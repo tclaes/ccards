@@ -10,6 +10,9 @@ management:
     web:
       # Actuator lives under /api, so health is served at /api/health.
       base-path: /api
+      # No Actuator index page at GET /api; only /api/health is served.
+      discovery:
+        enabled: false
       exposure:
         include: health
   endpoint:

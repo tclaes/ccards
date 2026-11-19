@@ -31,6 +31,7 @@ class HealthEndpointTests {
 
 	@Test
 	void otherManagementEndpointsAreNotExposed() {
+		client.get().uri("/api").exchange().expectStatus().isNotFound();
 		client.get().uri("/api/env").exchange().expectStatus().isNotFound();
 		client.get().uri("/actuator/env").exchange().expectStatus().isNotFound();
 	}

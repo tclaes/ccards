@@ -36,7 +36,7 @@ Each target is a thin wrapper around a Maven command, run with `cwd: apps/api`:
 
 | Target  | Command                         | Notes                                                                                                                                          |
 | ------- | ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| `serve` | `./mvnw spring-boot:run`        | `continuous: true`, target-level `readyWhen: { url: http://localhost:8080/api/health }`, so later e2e work (CC-35) can wait for it|
+| `serve` | `./mvnw spring-boot:run`        | `continuous: true`, target-level `readyWhen: { url: http://localhost:{env.SERVER_PORT ?? 8080}/api/health }`, so later e2e work (CC-35) can wait for it|
 | `build` | `./mvnw -B package -DskipTests` | `outputs: ["{projectRoot}/target"]`, cached; inputs `{projectRoot}/pom.xml`, `{projectRoot}/src/main/**`, `{projectRoot}/.mvn/**`           |
 | `test`  | `./mvnw -B test`                | cached; inputs include `{projectRoot}/src/**`                                                                                                  |
 
@@ -63,6 +63,8 @@ management:
       base-path: /api
       exposure:
         include: health
+      discovery:
+        enabled: false
   endpoint:
     health:
       show-details: never
@@ -73,6 +75,7 @@ management:
 - *Why:* This gives exactly `GET /api/health` → `{"status":"UP"}` with Actuator's standard health endpoint, as the issue asks. Exposing only `health` and never showing details meets the "no other management endpoints / no component details" requirements.
 - *Alternatives:* `server.servlet.context-path: /api` would give `/api/actuator/health` and put the prefix on every future controller. That is a bigger decision than this issue needs. A hand-written `HealthController` would duplicate Actuator and drop its aggregation of health indicators.
 - *Note:* Actuator now shares the `/api` namespace with application controllers. Future controllers must not use `/api/health`. If more Actuator endpoints are exposed later (CC-36 Observability), move management to its own base path or port at that point.
+- `discovery.enabled: false` removes Actuator's links page, which would otherwise answer `GET /api` and claim the `/api` root.
 - Boot 4 turns on the liveness/readiness health groups by default, which adds `"groups":[...]` to the body. `probes.enabled: false` keeps the body at exactly `{"status":"UP"}`. Turn it back on when deploying to a platform that uses probes (CC-37).
 - Actuator answers with content type `application/vnd.spring-boot.actuator.v3+json`. The spec allows a JSON vendor type.
 
