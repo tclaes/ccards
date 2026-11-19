@@ -5,6 +5,9 @@ dist
 tmp
 out-tsc
 
+# Maven build output
+/apps/api/target/
+
 # dependencies
 node_modules
 

@@ -1,0 +1,25 @@
+spring:
+  application:
+    name: api
+
+server:
+  port: 8080
+
+management:
+  endpoints:
+    web:
+      # Actuator lives under /api, so health is served at /api/health.
+      base-path: /api
+      # No Actuator index page at GET /api; only /api/health is served.
+      discovery:
+        enabled: false
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
+      # Boot 4 enables liveness/readiness groups by default, which adds a
+      # "groups" field to the response. Off until we deploy to a platform
+      # that uses probes (CC-37).
+      probes:
+        enabled: false
