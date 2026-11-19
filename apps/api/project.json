@@ -1,0 +1,47 @@
+{
+  "name": "api",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "sourceRoot": "apps/api/src/main/java",
+  "tags": [],
+  "namedInputs": {
+    "maven": [
+      "{projectRoot}/pom.xml",
+      "{projectRoot}/.mvn/**/*",
+      "{projectRoot}/mvnw"
+    ]
+  },
+  "targets": {
+    "serve": {
+      "executor": "nx:run-commands",
+      "continuous": true,
+      "readyWhen": {
+        "url": "http://localhost:8080/api/health"
+      },
+      "options": {
+        "command": "./mvnw spring-boot:run",
+        "cwd": "apps/api"
+      }
+    },
+    "build": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": ["maven", "{projectRoot}/src/main/**/*"],
+      "outputs": ["{projectRoot}/target"],
+      "options": {
+        "command": "./mvnw -B package -DskipTests",
+        "cwd": "apps/api"
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": ["maven", "{projectRoot}/src/**/*"],
+      "outputs": ["{projectRoot}/target/surefire-reports"],
+      "options": {
+        "command": "./mvnw -B test",
+        "cwd": "apps/api"
+      }
+    }
+  }
+}
