@@ -171,6 +171,20 @@ npx nx codegen api-client      # regenerate the TypeScript client (Nx cache keye
 
 The generators need a JDK (already required for `apps/api`); the generator JAR is downloaded on first use, pinned in `openapitools.json`. The target is called `codegen` because `nx generate` is a built-in Nx command.
 
+## Error handling
+
+Every failed API request answers with `application/problem+json` ([RFC 9457](https://www.rfc-editor.org/rfc/rfc9457)): `title`, `status`, `detail`, `instance` (`type` is omitted, meaning `about:blank`). Validation failures (400) add `errors: [{field, message}]`, one entry per violated field. Unexpected exceptions become a generic 500; the details are only logged. The shapes are defined in `libs/api-contract/openapi.yaml` (`Problem`, `ValidationProblem`, `FieldViolation`), and the handler is `GlobalExceptionHandler` in `apps/api`.
+
+To test a new endpoint's failures, copy a case from `ErrorHandlingTests` (it uses the test-only `ErrorTestController`, which is not part of the app).
+
+In the web app an HTTP interceptor (`core/http/error.interceptor.ts`) shows every failed call through `NotificationService`; the messages render in `<app-notification-host>`, disappear after 8 seconds (paused while hovered or focused) and can be dismissed. A caller that shows its own error opts out per request:
+
+```ts
+http.post('/api/cards', body, {
+  context: new HttpContext().set(SKIP_ERROR_NOTIFICATION, true),
+});
+```
+
 ## Specs
 
 Behavior and planned changes are tracked with [OpenSpec](https://github.com/Fission-AI/OpenSpec) in `openspec/`.

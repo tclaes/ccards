@@ -84,7 +84,16 @@
       }
     },
     "lint": {
-      "dependsOn": ["api-client:codegen"]
+      "dependsOn": ["api-client:codegen", "stylelint"]
+    },
+    "stylelint": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": ["default", "{workspaceRoot}/stylelint.config.mjs"],
+      "options": {
+        "command": "stylelint \"apps/web/src/**/*.css\"",
+        "cwd": "{workspaceRoot}"
+      }
     }
   },
   "implicitDependencies": ["api-client"]
