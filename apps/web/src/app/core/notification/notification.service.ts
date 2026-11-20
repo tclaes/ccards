@@ -55,10 +55,7 @@ export class NotificationService {
   }
 
   private clearTimer(id: number): void {
-    const timer = this.timers.get(id);
-    if (timer !== undefined) {
-      clearTimeout(timer);
-      this.timers.delete(id);
-    }
+    clearTimeout(this.timers.get(id));
+    this.timers.delete(id);
   }
 }

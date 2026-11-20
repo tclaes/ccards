@@ -5,6 +5,7 @@ import jakarta.validation.Path;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.MessageSourceResolvable;
@@ -14,8 +15,7 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
-import org.springframework.validation.FieldError;
-import org.springframework.validation.ObjectError;
+import org.springframework.validation.Errors;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -44,10 +44,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 	@Override
 	protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
 			HttpHeaders headers, HttpStatusCode status, WebRequest request) {
-		List<FieldViolation> errors = new ArrayList<>();
-		ex.getBindingResult().getFieldErrors().forEach(e -> errors.add(violation(e)));
-		ex.getBindingResult().getGlobalErrors().forEach(e -> errors.add(violation(e)));
-		return validationProblem(ex, errors, headers, request);
+		return validationProblem(ex, violations(ex.getBindingResult()), headers, request);
 	}
 
 	@Override
@@ -56,8 +53,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 		List<FieldViolation> errors = new ArrayList<>();
 		for (ParameterValidationResult result : ex.getParameterValidationResults()) {
 			if (result instanceof ParameterErrors parameterErrors) {
-				parameterErrors.getFieldErrors().forEach(e -> errors.add(violation(e)));
-				parameterErrors.getGlobalErrors().forEach(e -> errors.add(violation(e)));
+				errors.addAll(violations(parameterErrors));
 				continue;
 			}
 			String name = result.getMethodParameter().getParameterName();
@@ -111,12 +107,14 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 		return handleExceptionInternal(ex, problem, headers, HttpStatus.BAD_REQUEST, request);
 	}
 
-	private static FieldViolation violation(FieldError error) {
-		return new FieldViolation(error.getField(), error.getDefaultMessage());
-	}
-
-	private static FieldViolation violation(ObjectError error) {
-		return new FieldViolation(error.getObjectName(), error.getDefaultMessage());
+	/** Field errors first, then object-level errors (reported under the object's name). */
+	private static List<FieldViolation> violations(Errors errors) {
+		return Stream.concat(
+				errors.getFieldErrors().stream()
+					.map(e -> new FieldViolation(e.getField(), e.getDefaultMessage())),
+				errors.getGlobalErrors().stream()
+					.map(e -> new FieldViolation(e.getObjectName(), e.getDefaultMessage())))
+			.toList();
 	}
 
 	private static String leafName(Path path) {
