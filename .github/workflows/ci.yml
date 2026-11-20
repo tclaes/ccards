@@ -8,9 +8,10 @@ on:
 permissions:
   contents: read
 
-# Cancel superseded runs on PRs; always check every commit on main.
+# Cancel superseded runs on PRs. Every push to main gets its own group, so no
+# main commit is skipped (a shared group would cancel pending runs).
 concurrency:
-  group: ci-${{ github.ref }}
+  group: ci-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
