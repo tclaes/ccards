@@ -39,3 +39,11 @@ Rules:
 - Verify the move: `gh project item-list 1 --owner tclaes --format json` shows `"status": "In Progress"` for the item.
 - Say in your reply that you moved the item.
 - Do not move items to `Done` yourself; that happens when the pull request is merged and the issue is closed.
+
+## After coding is complete
+
+**When the implementation is finished (all tasks done, tests passing) and before you commit or open the pull request, run `/sentry-skills:code-simplifier`** on the code you changed. It simplifies and cleans up recently modified code without changing behavior.
+
+- Only run it on the files you changed in this task, not on the whole repository.
+- After it makes changes, re-run the checks for the touched projects (`npx nx affected -t lint test build`) and make sure they still pass.
+- Skip it for changes that touch no code (docs-only, OpenSpec artifacts only) and say so in your reply.
