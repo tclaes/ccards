@@ -10,7 +10,10 @@
     "target": "es2022",
     "module": "esnext",
     "lib": ["es2022", "dom"],
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "paths": {
+      "@ccards/api-client": ["./libs/api-client/src/index.ts"]
+    }
   },
   "exclude": ["node_modules", "tmp"]
 }

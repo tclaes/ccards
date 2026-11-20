@@ -57,3 +57,6 @@ __screenshots__/
 
 # local dev stack credentials
 apps/api/.env
+
+# generated from libs/api-contract/openapi.yaml
+/libs/api-client/src/generated/
