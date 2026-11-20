@@ -12,7 +12,7 @@ Prerequisite: CC-01, CC-02 and CC-04 are on the base branch.
 
 ## 2. Branch protection and docs
 
-- [ ] 2.1 After a green `CI` run exists, apply protection to `main` with `gh api -X PUT repos/tclaes/ccards/branches/main/protection` (required check `CI`, PRs required, no force push/deletion, `enforce_admins: false`); verify with `gh api repos/tclaes/ccards/branches/main/protection --jq '.required_status_checks.contexts'` returning `["CI"]`
+- [x] 2.1 After a green `CI` run exists, apply protection to `main` with `gh api -X PUT repos/tclaes/ccards/branches/main/protection` (required check `CI`, PRs required, no force push/deletion, `enforce_admins: false`); verify with `gh api repos/tclaes/ccards/branches/main/protection --jq '.required_status_checks.contexts'` returning `["CI"]`
 - [ ] 2.2 Verify protection works: `git push origin HEAD:main` from a scratch commit is rejected, and the PR's merge button is blocked while `CI` is failing or pending (use the throwaway failing commit from 1.5 before reverting it, or a second test PR)
 - [ ] 2.3 Add a "Continuous integration" section to `README.md`: what runs and when, the local reproduction command, the required `CI` check and the exact `gh api` protection command, and the note that `api` has no lint target yet; verify the documented commands run as written
 - [ ] 2.4 Run `openspec validate add-ci-pipeline --strict`, `npx nx affected -t lint test build` and `npm run format:check`; verify all pass
