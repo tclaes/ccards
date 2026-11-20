@@ -8,7 +8,7 @@ Prerequisite: CC-01, CC-02 and CC-04 are on the base branch.
 - [x] 1.2 Create `.github/workflows/ci.yml` per design D1-D3 and D6 (triggers, `ubuntu-24.04`, `fetch-depth: 0`, `nrwl/nx-set-shas`, Node from `.nvmrc`, Java 21, npm/Maven caches, `npm ci`, `npx nx affected -t lint test build`, job named `CI`, concurrency, read-only permissions, 20 minute timeout); verify the file passes `npx prettier --check .github/workflows/ci.yml` and `actionlint` (or `npx -y @action-validator/cli`) if available
 - [x] 1.3 Reproduce the CI command locally: `NX_BASE=main NX_HEAD=HEAD npx nx affected -t lint test build`; verify it exits 0 and runs `web:lint`, `web:test`, `web:build`, `api:test`, `api:build` when both projects are affected (e.g. with `--all`)
 - [ ] 1.4 Open the PR and verify the `CI` check runs on it, that the API test log shows `FlywayMigrationTests` executed (not skipped), and that a docs-only commit finishes green with no project tasks
-- [ ] 1.5 Prove the gate fails: push a throwaway commit that breaks a `web` unit test, verify `CI` reports failure naming `web:test`; then revert it and verify `CI` is green again
+- [x] 1.5 Prove the gate fails: push a throwaway commit that breaks a `web` unit test, verify `CI` reports failure naming `web:test`; then revert it and verify `CI` is green again
 
 ## 2. Branch protection and docs
 
