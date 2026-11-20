@@ -1,5 +1,6 @@
 package com.ccards.api.error;
 
+import com.ccards.api.WithoutDatabase;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.ccards.errortest.ErrorTestController;
@@ -14,6 +15,7 @@ import org.springframework.test.web.servlet.client.RestTestClient;
 import org.springframework.test.web.servlet.client.RestTestClient.ResponseSpec;
 
 /** Every failure comes back as RFC 9457 {@code application/problem+json}. */
+@WithoutDatabase
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 @AutoConfigureRestTestClient
 @Import(ErrorTestController.class)

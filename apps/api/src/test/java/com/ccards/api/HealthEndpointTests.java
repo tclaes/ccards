@@ -12,6 +12,7 @@ import org.springframework.test.web.servlet.client.RestTestClient;
  * Starts the whole application on a random port (so it does not clash with a
  * running {@code nx serve api}) and calls it over real HTTP.
  */
+@WithoutDatabase
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 @AutoConfigureRestTestClient
 class HealthEndpointTests {

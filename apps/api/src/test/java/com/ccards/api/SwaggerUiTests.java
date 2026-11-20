@@ -12,6 +12,7 @@ import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.test.web.servlet.client.RestTestClient;
 
 /** Swagger UI renders the contract file, in the default profile, without a database. */
+@WithoutDatabase
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 @AutoConfigureRestTestClient
 class SwaggerUiTests {

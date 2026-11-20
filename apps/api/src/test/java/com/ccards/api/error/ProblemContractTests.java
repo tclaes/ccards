@@ -1,5 +1,6 @@
 package com.ccards.api.error;
 
+import com.ccards.api.WithoutDatabase;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.ccards.api.generated.model.Problem;
@@ -17,6 +18,7 @@ import org.springframework.test.web.servlet.client.RestTestClient;
 import tools.jackson.databind.json.JsonMapper;
 
 /** The real error JSON has only members the OpenAPI contract declares (`type` is omitted for about:blank). */
+@WithoutDatabase
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 @AutoConfigureRestTestClient
 @Import(ErrorTestController.class)

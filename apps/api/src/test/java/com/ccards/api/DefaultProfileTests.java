@@ -10,6 +10,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 
 /** The default profile must start without any database or mail server. */
+@WithoutDatabase
 @SpringBootTest(webEnvironment = WebEnvironment.NONE)
 class DefaultProfileTests {
 

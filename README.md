@@ -114,7 +114,7 @@ Start the API against the stack with the Spring `local` profile:
 npx nx serve api --configuration=local
 ```
 
-With `local`, `/api/health` also reflects the database: it returns 503 `{"status":"DOWN"}` while PostgreSQL is unreachable. Without the profile (`npx nx serve api`, `npx nx test api`) no database or mail server is needed.
+With `local`, `/api/health` also reflects the database: it returns 503 `{"status":"DOWN"}` while PostgreSQL is unreachable. `npx nx test api` needs no database or mail server (the full-context tests that run without the profile mock `LoyaltyCardRepository` via `@WithoutDatabase`). Since the card endpoints, `npx nx serve api` without the profile no longer starts: the card service needs the repository, which only exists when a database is configured. Use `--configuration=local`.
 
 ## Database migrations (Flyway)
 
@@ -170,7 +170,8 @@ The `CI` check must have run at least once before it can be required. To remove 
 
 - **Backend:** `./mvnw` runs `openapi-generator-maven-plugin` (`spring`, `interfaceOnly`) into `apps/api/target/generated-sources/openapi`. Interfaces are in `com.ccards.api.generated.api`, DTOs in `com.ccards.api.generated.model`. A controller implements the generated interface, so a contract change that the code does not follow fails to compile. (`GET /api/health` is served by Actuator, so `HealthApi` has no implementer.)
 - **Frontend:** `libs/api-client` holds a `typescript-angular` client generated into `libs/api-client/src/generated/` (git-ignored). Import it as `@ccards/api-client`. `web` build/test/serve/lint run `api-client:codegen` first.
-- **Docs:** Swagger UI at http://localhost:8080/swagger-ui (any profile, no database), rendering the contract file.
+- **Docs:** Swagger UI at http://localhost:8080/swagger-ui, rendering the contract file.
+- **Cards:** `GET /api/cards?page=&size=` (page of cards ordered by name, `size` 1-100, default 20) and `GET /api/cards/{id}` (404 problem details for an unknown id). Entities (`LoyaltyCard`) never leave the service: the controller maps them to the generated `Card` DTO with MapStruct (`CardMapper`), which also keeps `ownerId` off the wire.
 
 ```sh
 npx nx validate api-contract   # lint the contract; codegen depends on it
