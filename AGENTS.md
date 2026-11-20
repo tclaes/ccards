@@ -12,6 +12,8 @@ Work is tracked as GitHub issues on the project board **CCards** (https://github
 
 **As soon as you pick up an issue (before writing a proposal or any code), move its board item from `Todo` to `In Progress`.** "Picking up" means the user asks you to start, propose, apply or fix an issue (for example "start issue #5"). Do not move an item for issues you only read or discuss.
 
+**After moving the item, create the OpenSpec change with the `openspec-propose` skill** (`/opsx:propose`), using the issue as input (title, Why / What Changes / Impact, draft scenarios, task checklist). Do this before writing any code; implementation follows with `openspec-apply-change`. Skip the proposal only if the issue already links an existing OpenSpec change, and say so in your reply.
+
 Run these from any directory in the repo (needs the `gh` token scope `project`). Replace `<N>` with the issue number:
 
 ```sh
