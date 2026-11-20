@@ -16,6 +16,9 @@ import org.springframework.test.web.servlet.client.RestTestClient;
 @AutoConfigureRestTestClient
 class SwaggerUiTests {
 
+	/** Set by surefire (see pom.xml) so the test does not depend on the working directory. */
+	private static final String CONTRACT = System.getProperty("contract.file");
+
 	@Autowired
 	private RestTestClient client;
 
@@ -41,9 +44,17 @@ class SwaggerUiTests {
 			.exchange()
 			.expectStatus().isOk()
 			.expectBody(String.class).returnResult().getResponseBody();
-		String source = Files.readString(Path.of("../../libs/api-contract/openapi.yaml"));
+		String source = Files.readString(Path.of(CONTRACT));
 		assertThat(served).isEqualTo(source);
 		assertThat(served).contains("/api/health");
+	}
+
+	@Test
+	void codeScannedDocsStayEmptySoTheContractIsTheOnlyTruth() {
+		client.get().uri("/v3/api-docs")
+			.exchange()
+			.expectStatus().isOk()
+			.expectBody().jsonPath("$.paths").isEmpty();
 	}
 
 }

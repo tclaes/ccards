@@ -14,12 +14,20 @@ import org.springframework.http.ResponseEntity;
  */
 class GeneratedContractTests {
 
-	private final HealthApi api = () -> ResponseEntity.ok(new Health().status("UP"));
+	/** Stub implementation; add a method here whenever the contract gains an operation. */
+	private final HealthApi api = new HealthApi() {
+		@Override
+		public ResponseEntity<Health> getHealth() {
+			return ResponseEntity.ok(new Health().status("UP"));
+		}
+	};
 
 	@Test
 	void generatedInterfaceIsImplementable() {
-		assertThat(api.getHealth().getBody()).isNotNull();
-		assertThat(api.getHealth().getBody().getStatus()).isEqualTo("UP");
+		Health health = api.getHealth().getBody();
+
+		assertThat(health).isNotNull();
+		assertThat(health.getStatus()).isEqualTo("UP");
 	}
 
 }

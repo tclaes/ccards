@@ -18,6 +18,9 @@ springdoc:
   # Swagger UI renders libs/api-contract/openapi.yaml (contract-first), copied
   # to static/api-docs at build time, not a spec scanned from controllers.
   # (api-docs.enabled=false would switch Swagger UI off too.)
+  # springdoc cannot serve Swagger UI with api-docs disabled, so its scanned
+  # /v3/api-docs stays on but is forced empty: only the contract is documented.
+  paths-to-match: /__never-scanned__/**
   swagger-ui:
     path: /swagger-ui
     url: /api-docs/openapi.yaml
