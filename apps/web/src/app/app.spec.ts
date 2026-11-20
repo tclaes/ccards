@@ -25,12 +25,12 @@ describe('App shell', () => {
 
   it('renders the placeholder page in the shell on the root route', async () => {
     const shell = await navigateTo('/');
-    expect(shell.querySelector('h1')?.textContent).toBe('ccards');
+    expect(shell.querySelector('h1')?.textContent).toBe('ccards-BROKEN');
   });
 
   it('redirects unknown routes to the root', async () => {
     const shell = await navigateTo('/does-not-exist');
     expect(router.url).toBe('/');
-    expect(shell.querySelector('h1')?.textContent).toBe('ccards');
+    expect(shell.querySelector('h1')?.textContent).toBe('ccards-BROKEN');
   });
 });
