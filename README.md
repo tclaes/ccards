@@ -128,6 +128,34 @@ The database schema is created and changed **only** by [Flyway](https://flywaydb
 
 The migration tests (`FlywayMigrationTests`) start a throwaway PostgreSQL with Testcontainers. They are skipped, not failed, when Docker is not available, so `npx nx test api` still works without Docker; run it with Docker before merging changes to migrations. Whether Docker is running is an input of the Nx `test` cache, so a result from a run without Docker is never reused once Docker is up.
 
+## Continuous integration
+
+`.github/workflows/ci.yml` runs on every pull request and on every push to `main`. It installs Node (from `.nvmrc`) and Java 21, then runs lint, test and build for the **affected** projects only:
+
+```sh
+npx nx affected -t lint test build   # what CI runs
+npx nx run-many -t lint test build --all   # everything, regardless of changes
+```
+
+Locally, `affected` compares against `main` by default. Changes to shared files (`package.json`, `nx.json`, `.nvmrc`, `.github/workflows/`, ...) affect every project. A change that touches no project (for example only `README.md`) passes without running any task. `api` has no lint target yet (Java lint is not set up); it is covered by test and build. The runner has Docker, so `FlywayMigrationTests` run in CI instead of being skipped.
+
+The single job is named `CI`. That name is the required status check on `main`; do not rename it without updating the protection rule. Branch protection is a repository setting (needs admin rights) and was applied once with:
+
+```sh
+gh api -X PUT repos/tclaes/ccards/branches/main/protection --input - <<'EOF'
+{
+  "required_status_checks": { "strict": false, "contexts": ["CI"] },
+  "enforce_admins": false,
+  "required_pull_request_reviews": { "required_approving_review_count": 0 },
+  "restrictions": null,
+  "allow_force_pushes": false,
+  "allow_deletions": false
+}
+EOF
+```
+
+The `CI` check must have run at least once before it can be required. To remove the rule: `gh api -X DELETE repos/tclaes/ccards/branches/main/protection`.
+
 ## Specs
 
 Behavior and planned changes are tracked with [OpenSpec](https://github.com/Fission-AI/OpenSpec) in `openspec/`.
