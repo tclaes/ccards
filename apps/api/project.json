@@ -6,6 +6,7 @@
   "tags": [],
   "namedInputs": {
     "maven": [
+      "sharedGlobals",
       "{projectRoot}/pom.xml",
       "{projectRoot}/.mvn/**/*",
       "{projectRoot}/mvnw"
@@ -47,6 +48,7 @@
     "test": {
       "executor": "nx:run-commands",
       "cache": true,
+      "dependsOn": ["build"],
       "inputs": [
         "maven",
         "{workspaceRoot}/libs/api-contract/**/*",
