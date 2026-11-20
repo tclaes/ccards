@@ -43,7 +43,8 @@
           "extractLicenses": false,
           "sourceMap": true
         }
-      }
+      },
+      "dependsOn": ["api-client:codegen"]
     },
     "serve": {
       "continuous": true,
@@ -59,13 +60,15 @@
         "development": {
           "buildTarget": "web:build:development"
         }
-      }
+      },
+      "dependsOn": ["api-client:codegen"]
     },
     "test": {
       "executor": "@angular/build:unit-test",
       "options": {
         "watch": false
-      }
+      },
+      "dependsOn": ["api-client:codegen"]
     },
     "serve-static": {
       "continuous": true,
@@ -79,6 +82,10 @@
         "staticFilePath": "dist/apps/web/browser",
         "spa": true
       }
+    },
+    "lint": {
+      "dependsOn": ["api-client:codegen"]
     }
-  }
+  },
+  "implicitDependencies": ["api-client"]
 }

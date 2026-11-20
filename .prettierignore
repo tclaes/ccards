@@ -9,3 +9,5 @@
 # Managed by OpenSpec / Claude Code
 /.claude
 /openspec
+
+/libs/api-client/src/generated
