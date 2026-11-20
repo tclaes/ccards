@@ -43,7 +43,13 @@
     "test": {
       "executor": "nx:run-commands",
       "cache": true,
-      "inputs": ["maven", "{projectRoot}/src/**/*"],
+      "inputs": [
+        "maven",
+        "{projectRoot}/src/**/*",
+        {
+          "runtime": "docker info > /dev/null 2>&1 && echo docker-up || echo docker-down"
+        }
+      ],
       "outputs": ["{projectRoot}/target/surefire-reports"],
       "options": {
         "command": "./mvnw -B test",

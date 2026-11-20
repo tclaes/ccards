@@ -1,0 +1,3 @@
+-- Baseline migration: establishes the Flyway schema history.
+-- No tables yet; the first domain table arrives with CC-08 as V2.
+-- Never edit this file once applied; add a new V<n>__<description>.sql instead.
