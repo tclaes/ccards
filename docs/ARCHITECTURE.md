@@ -66,3 +66,7 @@ When unsure, ask: "could I use this component on another screen with different d
 - State lives in services as signals; components read them.
 - HTTP errors are handled centrally by the interceptor; a caller only handles an error itself when it opts out (`SKIP_ERROR_NOTIFICATION`).
 - Types for API data come from `@ccards/api-client`, never hand-written copies.
+
+## Making changes
+
+Every change starts as an OpenSpec change in `openspec/changes/`. When picking up an issue, create it with the `openspec-propose` skill (`/opsx:propose`) before writing code, then implement it with `openspec-apply-change`. The steps for moving the issue on the board are in `AGENTS.md`.
