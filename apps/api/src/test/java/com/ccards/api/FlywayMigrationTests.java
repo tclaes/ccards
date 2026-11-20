@@ -50,12 +50,12 @@ class FlywayMigrationTests {
 	}
 
 	@Test
-	void initialMigrationIsAppliedAtStartup() {
+	void migrationsAreAppliedAtStartup() {
 		List<Map<String, Object>> history = jdbc.queryForList(
 			"select version, success from flyway_schema_history where version is not null order by installed_rank");
 
-		assertThat(history).hasSize(1);
-		assertThat(history.get(0)).containsEntry("version", "1").containsEntry("success", true);
+		assertThat(history).extracting(row -> row.get("version")).containsExactly("1", "2");
+		assertThat(history).allSatisfy(row -> assertThat(row).containsEntry("success", true));
 	}
 
 	@Test
