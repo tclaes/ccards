@@ -127,16 +127,19 @@ class LoyaltyCardRepositoryTests {
 
 	@Test
 	void updateMovesUpdatedAtAndKeepsCreatedAt() {
-		LoyaltyCard saved = repository.saveAndFlush(newCard(BarcodeType.EAN_13, OWNER));
-		Instant createdAt = saved.getCreatedAt();
+		UUID id = repository.saveAndFlush(newCard(BarcodeType.EAN_13, OWNER)).getId();
 		flushAndClear();
 
-		LoyaltyCard loaded = repository.findById(saved.getId()).orElseThrow();
+		// Read from the database first: PostgreSQL stores microseconds, the JVM clock has nanoseconds.
+		LoyaltyCard loaded = repository.findById(id).orElseThrow();
+		Instant createdAt = loaded.getCreatedAt();
 		loaded.setName("Renamed");
 		repository.saveAndFlush(loaded);
+		flushAndClear();
 
-		assertThat(loaded.getCreatedAt()).isEqualTo(createdAt);
-		assertThat(loaded.getUpdatedAt()).isAfter(createdAt);
+		LoyaltyCard reloaded = repository.findById(id).orElseThrow();
+		assertThat(reloaded.getCreatedAt()).isEqualTo(createdAt);
+		assertThat(reloaded.getUpdatedAt()).isAfter(createdAt);
 	}
 
 	@Test
