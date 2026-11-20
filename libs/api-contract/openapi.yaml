@@ -24,8 +24,70 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Health'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
 components:
+  responses:
+    BadRequest:
+      description: The request is invalid; `errors` lists every violated field
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ValidationProblem'
+    NotFound:
+      description: The resource does not exist
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    InternalServerError:
+      description: Unexpected server error; details are only in the server log
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
   schemas:
+    Problem:
+      type: object
+      description: Problem details object (RFC 9457)
+      required: [title, status]
+      properties:
+        type:
+          type: string
+          example: about:blank
+        title:
+          type: string
+          example: Bad Request
+        status:
+          type: integer
+          format: int32
+          example: 400
+        detail:
+          type: string
+        instance:
+          type: string
+          example: /api/cards
+    ValidationProblem:
+      description: Problem with the violated fields (HTTP 400)
+      allOf:
+        - $ref: '#/components/schemas/Problem'
+        - type: object
+          required: [errors]
+          properties:
+            errors:
+              type: array
+              items:
+                $ref: '#/components/schemas/FieldViolation'
+    FieldViolation:
+      type: object
+      required: [field, message]
+      properties:
+        field:
+          type: string
+          example: title
+        message:
+          type: string
+          example: must not be blank
     Health:
       type: object
       required: [status]

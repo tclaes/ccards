@@ -1,0 +1,27 @@
+/* Design tokens. Component CSS must use these (enforced by stylelint, see
+   stylelint.config.mjs); raw colors, spacing and font sizes belong only here. */
+:root {
+  /* Typography: every size derives from the base. */
+  --font-size-base: 1rem;
+  --font-size-lg: calc(var(--font-size-base) * 1.25);
+
+  /* Spacing */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+
+  /* Colors */
+  --color-surface: #fff;
+  --color-danger: #b00020;
+  --color-on-danger-surface: #5c0011;
+  --color-shadow: rgb(0 0 0 / 0.2);
+
+  /* Shape and elevation */
+  --border-width: 1px;
+  --radius-sm: 0.25rem;
+  --shadow-md: 0 2px 8px var(--color-shadow);
+
+  /* Sizes */
+  --size-notification-max: 28rem;
+}

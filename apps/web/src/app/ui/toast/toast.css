@@ -1,0 +1,20 @@
+:host {
+  align-items: flex-start;
+  background: var(--color-surface);
+  border: var(--border-width) solid var(--color-danger);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-md);
+  color: var(--color-on-danger-surface);
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+}
+
+.glyph {
+  font-size: var(--font-size-lg);
+}
+
+.message {
+  flex: 1;
+  white-space: pre-line;
+}

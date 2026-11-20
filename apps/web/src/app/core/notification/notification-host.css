@@ -1,0 +1,22 @@
+:host {
+  background: transparent;
+  border: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  inset: auto;
+  margin: 0;
+  max-width: min(
+    var(--size-notification-max),
+    calc(100vw - 2 * var(--space-4))
+  );
+  overflow: visible;
+  padding: 0;
+  right: var(--space-4);
+  top: var(--space-4);
+}
+
+/* A manual popover is only displayed while open (the display above would otherwise win). */
+:host(:not(:popover-open)) {
+  display: none;
+}

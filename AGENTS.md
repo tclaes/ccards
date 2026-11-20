@@ -2,6 +2,10 @@
 
 Instructions for AI coding agents working in this repository. For the stack, commands and project layout see `README.md`. Planned changes are tracked with OpenSpec in `openspec/`.
 
+## Coding conventions
+
+Follow `docs/CODING_STYLES.md` for all code you write or change: **KISS** (simplest thing that meets the spec), **YAGNI** (nothing the task or spec does not require) and **SOLID** (where there are real collaborators). Read it before implementing a task, and run through its closing checklist before you finish. Follow `docs/ARCHITECTURE.md` for where code lives; in the web app that includes the smart / dumb component rule.
+
 ## Picking up an issue
 
 Work is tracked as GitHub issues on the project board **CCards** (https://github.com/users/tclaes/projects/1, repository `tclaes/ccards`). The board has a `Status` field with the options `Todo`, `In Progress` and `Done`.
