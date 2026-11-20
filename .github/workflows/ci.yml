@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: read
+  actions: read # nrwl/nx-set-shas looks up the last successful run on main
 
 # Cancel superseded runs on PRs. Every push to main gets its own group, so no
 # main commit is skipped (a shared group would cancel pending runs).
