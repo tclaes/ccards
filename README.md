@@ -123,10 +123,10 @@ The database schema is created and changed **only** by [Flyway](https://flywaydb
 - **Location:** `apps/api/src/main/resources/db/migration/`
 - **Naming:** `V<number>__<snake_case_description>.sql`, for example `V2__create_loyalty_card.sql` (two underscores). `V1__init.sql` is an empty baseline.
 - **Never edit a migration that has been applied** (anywhere, including a teammate's machine). Flyway stores a checksum and refuses to start with "checksum mismatch". Add a new `V<n+1>` that changes the schema instead.
-- **Reset locally:** `docker compose down -v` in `apps/api` wipes the database; the next start re-applies every migration from `V1`.
+- **Reset locally:** run `docker compose down -v` in `apps/api` to wipe the database (this also removes the containers), then `docker compose up -d --wait` to start PostgreSQL again and wait until it is healthy. The next API start with the `local` profile re-applies every migration from `V1`.
 - **Hibernate only validates** (`spring.jpa.hibernate.ddl-auto=validate`). If an entity maps to a table or column no migration created, the API fails at startup with a validation error. We do not use `ddl-auto=update`: it changes the schema silently, leaves no history, cannot be reviewed in a pull request and can behave differently per machine.
 
-The migration tests (`FlywayMigrationTests`) start a throwaway PostgreSQL with Testcontainers. They are skipped, not failed, when Docker is not available, so `npx nx test api` still works without Docker; run it with Docker before merging changes to migrations.
+The migration tests (`FlywayMigrationTests`) start a throwaway PostgreSQL with Testcontainers. They are skipped, not failed, when Docker is not available, so `npx nx test api` still works without Docker; run it with Docker before merging changes to migrations. Whether Docker is running is an input of the Nx `test` cache, so a result from a run without Docker is never reused once Docker is up.
 
 ## Specs
 
