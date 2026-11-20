@@ -20,7 +20,7 @@ describe('Toast', () => {
   it('emits dismissed from the button', () => {
     const spy = vi.fn();
     fixture.componentInstance.dismissed.subscribe(spy);
-    el.querySelector('button')!.click();
+    el.querySelector('button')?.click();
     expect(spy).toHaveBeenCalledOnce();
   });
 

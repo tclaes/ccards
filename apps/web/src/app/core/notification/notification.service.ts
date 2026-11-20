@@ -21,10 +21,11 @@ export class NotificationService {
       message,
       severity: 'error',
     };
-    const all = [...this.items(), notification];
-    const evicted = all.slice(0, Math.max(0, all.length - MAX_NOTIFICATIONS));
-    evicted.forEach((n) => this.clearTimer(n.id));
-    this.items.set(all.slice(evicted.length));
+    const kept = [...this.items(), notification].slice(-MAX_NOTIFICATIONS);
+    this.items()
+      .filter((n) => !kept.includes(n))
+      .forEach((n) => this.clearTimer(n.id));
+    this.items.set(kept);
     this.startTimer(notification.id);
   }
 

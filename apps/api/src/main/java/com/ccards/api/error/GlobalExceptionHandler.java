@@ -58,12 +58,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 			if (result instanceof ParameterErrors parameterErrors) {
 				parameterErrors.getFieldErrors().forEach(e -> errors.add(violation(e)));
 				parameterErrors.getGlobalErrors().forEach(e -> errors.add(violation(e)));
+				continue;
 			}
-			else {
-				String name = result.getMethodParameter().getParameterName();
-				for (MessageSourceResolvable error : result.getResolvableErrors()) {
-					errors.add(new FieldViolation(name != null ? name : "parameter", error.getDefaultMessage()));
-				}
+			String name = result.getMethodParameter().getParameterName();
+			for (MessageSourceResolvable error : result.getResolvableErrors()) {
+				errors.add(new FieldViolation(name != null ? name : "parameter", error.getDefaultMessage()));
 			}
 		}
 		return validationProblem(ex, errors, headers, request);
@@ -87,9 +86,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
 	@ExceptionHandler(Exception.class)
 	protected ResponseEntity<Object> handleUnexpected(Exception ex, WebRequest request) {
-		String path = request instanceof ServletWebRequest servletRequest
-				? servletRequest.getRequest().getRequestURI() : "unknown";
-		log.error("Unhandled exception for request {}", path, ex);
+		log.error("Unhandled exception for request {}", request.getDescription(false), ex);
 		ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR,
 				"An unexpected error occurred.");
 		return handleExceptionInternal(ex, problem, new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR, request);

@@ -18,10 +18,10 @@ describe('Button', () => {
     fixture.detectChanges();
     const button = (fixture.nativeElement as HTMLElement).querySelector(
       'button',
-    )!;
+    );
 
-    expect(button.textContent?.trim()).toBe('Go');
-    button.click();
+    expect(button?.textContent?.trim()).toBe('Go');
+    button?.click();
     expect(fixture.componentInstance.clicks).toBe(1);
   });
 });

@@ -64,7 +64,7 @@ describe('NotificationHost', () => {
     fixture.detectChanges();
     el.querySelector<HTMLButtonElement>(
       'button[aria-label="Dismiss notification"]',
-    )!.click();
+    )?.click();
     fixture.detectChanges();
     expect(alerts()).toHaveLength(0);
   });

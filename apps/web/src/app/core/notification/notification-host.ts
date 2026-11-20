@@ -40,9 +40,9 @@ export class NotificationHost {
       // Optional calls: browsers without the Popover API just show the host.
       if (this.hasNotifications()) {
         this.element.showPopover?.();
-      } else {
-        this.element.hidePopover?.();
+        return;
       }
+      this.element.hidePopover?.();
     });
   }
 }
