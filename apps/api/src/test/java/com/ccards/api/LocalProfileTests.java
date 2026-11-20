@@ -20,7 +20,12 @@ import org.springframework.test.context.ActiveProfiles;
 	// Pin the placeholders so a developer's exported POSTGRES_* / MAILPIT_* variables
 	// (or an .env loaded by Nx) cannot change what these tests assert.
 	"POSTGRES_PORT=5432", "POSTGRES_DB=ccards", "POSTGRES_USER=ccards",
-	"POSTGRES_PASSWORD=ccards", "MAILPIT_SMTP_PORT=1025"
+	"POSTGRES_PASSWORD=ccards", "MAILPIT_SMTP_PORT=1025",
+	// Wiring test only: no database is running, so neither migrate nor validate,
+	// and do not let Hibernate open a connection to detect the dialect.
+	"spring.flyway.enabled=false", "spring.jpa.hibernate.ddl-auto=none",
+	"spring.jpa.database-platform=org.hibernate.dialect.PostgreSQLDialect",
+	"spring.jpa.properties.hibernate.boot.allow_jdbc_metadata_access=false"
 })
 @ActiveProfiles("local")
 class LocalProfileTests {

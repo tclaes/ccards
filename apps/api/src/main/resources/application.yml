@@ -5,6 +5,11 @@ spring:
     # Default profile needs no database (also keeps `nx test api` Docker-free).
     # The `local` profile re-enables it; see application-local.yml.
     exclude: org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration
+  jpa:
+    hibernate:
+      # Schema is owned by Flyway migrations (db/migration). Hibernate only
+      # validates; never use `update`/`create`: no history, not reviewable.
+      ddl-auto: validate
 
 server:
   port: 8080
