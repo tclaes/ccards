@@ -1,0 +1,24 @@
+{
+  "name": "api-client",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "library",
+  "sourceRoot": "libs/api-client/src",
+  "tags": [],
+  "implicitDependencies": ["api-contract"],
+  "targets": {
+    "codegen": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "dependsOn": ["api-contract:validate"],
+      "inputs": [
+        "{workspaceRoot}/libs/api-contract/openapi.yaml",
+        "{workspaceRoot}/openapitools.json"
+      ],
+      "outputs": ["{projectRoot}/src/generated"],
+      "options": {
+        "command": "openapi-generator-cli generate -i libs/api-contract/openapi.yaml -g typescript-angular -o libs/api-client/src/generated --additional-properties=ngVersion=22.0.0,providedIn=root,stringEnums=true,supportsES6=true,withInterfaces=false --skip-validate-spec",
+        "cwd": "{workspaceRoot}"
+      }
+    }
+  }
+}

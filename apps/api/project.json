@@ -33,7 +33,11 @@
     "build": {
       "executor": "nx:run-commands",
       "cache": true,
-      "inputs": ["maven", "{projectRoot}/src/main/**/*"],
+      "inputs": [
+        "maven",
+        "{projectRoot}/src/main/**/*",
+        "{workspaceRoot}/libs/api-contract/**/*"
+      ],
       "outputs": ["{projectRoot}/target"],
       "options": {
         "command": "./mvnw -B package -DskipTests",
@@ -45,6 +49,7 @@
       "cache": true,
       "inputs": [
         "maven",
+        "{workspaceRoot}/libs/api-contract/**/*",
         "{projectRoot}/src/**/*",
         {
           "runtime": "docker info > /dev/null 2>&1 && echo docker-up || echo docker-down"

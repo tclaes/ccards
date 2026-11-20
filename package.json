@@ -20,6 +20,7 @@
     "@nx/eslint-plugin": "24.0.0",
     "@nx/js": "24.0.0",
     "@nx/web": "24.0.0",
+    "@openapitools/openapi-generator-cli": "^2.42.2",
     "@schematics/angular": "~22.2.0",
     "@swc-node/register": "1.11.1",
     "@swc/core": "1.15.8",

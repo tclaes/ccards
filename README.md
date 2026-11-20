@@ -128,6 +128,21 @@ The database schema is created and changed **only** by [Flyway](https://flywaydb
 
 The migration tests (`FlywayMigrationTests`) start a throwaway PostgreSQL with Testcontainers. They are skipped, not failed, when Docker is not available, so `npx nx test api` still works without Docker; run it with Docker before merging changes to migrations. Whether Docker is running is an input of the Nx `test` cache, so a result from a run without Docker is never reused once Docker is up.
 
+## API contract (OpenAPI)
+
+`libs/api-contract/openapi.yaml` is the single source of truth for the HTTP API. **Edit that file, never generated code.** Both sides are generated from it during the build and nothing generated is committed:
+
+- **Backend:** `./mvnw` runs `openapi-generator-maven-plugin` (`spring`, `interfaceOnly`) into `apps/api/target/generated-sources/openapi`. Interfaces are in `com.ccards.api.generated.api`, DTOs in `com.ccards.api.generated.model`. A controller implements the generated interface, so a contract change that the code does not follow fails to compile. (`GET /api/health` is served by Actuator, so `HealthApi` has no implementer.)
+- **Frontend:** `libs/api-client` holds a `typescript-angular` client generated into `libs/api-client/src/generated/` (git-ignored). Import it as `@ccards/api-client`. `web` build/test/serve/lint run `api-client:codegen` first.
+- **Docs:** Swagger UI at http://localhost:8080/swagger-ui (any profile, no database), rendering the contract file.
+
+```sh
+npx nx validate api-contract   # lint the contract; codegen depends on it
+npx nx codegen api-client      # regenerate the TypeScript client (Nx cache keyed on the contract)
+```
+
+The generators need a JDK (already required for `apps/api`); the generator JAR is downloaded on first use, pinned in `openapitools.json`. The target is called `codegen` because `nx generate` is a built-in Nx command.
+
 ## Specs
 
 Behavior and planned changes are tracked with [OpenSpec](https://github.com/Fission-AI/OpenSpec) in `openspec/`.

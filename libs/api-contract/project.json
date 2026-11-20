@@ -1,0 +1,21 @@
+{
+  "name": "api-contract",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "library",
+  "sourceRoot": "libs/api-contract",
+  "tags": [],
+  "targets": {
+    "validate": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/openapi.yaml",
+        "{workspaceRoot}/openapitools.json"
+      ],
+      "options": {
+        "command": "openapi-generator-cli validate -i libs/api-contract/openapi.yaml",
+        "cwd": "{workspaceRoot}"
+      }
+    }
+  }
+}

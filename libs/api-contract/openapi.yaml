@@ -1,0 +1,35 @@
+openapi: 3.0.3
+info:
+  title: ccards API
+  version: 0.0.1
+  description: |
+    Source of truth for the ccards HTTP API. Edit this file; the Java
+    interfaces/DTOs (apps/api) and the TypeScript client (libs/api-client)
+    are generated from it at build time.
+servers:
+  - url: http://localhost:8080
+    description: Local development
+tags:
+  - name: Health
+paths:
+  /api/health:
+    get:
+      tags: [Health]
+      operationId: getHealth
+      summary: Liveness of the API
+      responses:
+        '200':
+          description: The API is up
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Health'
+components:
+  schemas:
+    Health:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          example: UP
