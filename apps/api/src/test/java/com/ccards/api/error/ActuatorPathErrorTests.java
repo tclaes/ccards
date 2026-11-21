@@ -1,6 +1,5 @@
 package com.ccards.api.error;
 
-import com.ccards.api.WithoutDatabase;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureRestTestClient;
@@ -10,7 +9,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.client.RestTestClient;
 
 /** Unmapped paths under the Actuator base path ({@code /api}) also answer with problem+json. */
-@WithoutDatabase
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 @AutoConfigureRestTestClient
 class ActuatorPathErrorTests {

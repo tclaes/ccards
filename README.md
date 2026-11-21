@@ -114,7 +114,7 @@ Start the API against the stack with the Spring `local` profile:
 npx nx serve api --configuration=local
 ```
 
-With `local`, `/api/health` also reflects the database: it returns 503 `{"status":"DOWN"}` while PostgreSQL is unreachable. `npx nx test api` needs no database or mail server (the full-context tests that run without the profile mock `LoyaltyCardRepository` via `@WithoutDatabase`). Since the card endpoints, `npx nx serve api` without the profile no longer starts: the card service needs the repository, which only exists when a database is configured. Use `--configuration=local`.
+With `local`, `/api/health` also reflects the database: it returns 503 `{"status":"DOWN"}` while PostgreSQL is unreachable. Without the profile (`npx nx serve api`, `npx nx test api`) no database or mail server is needed; the card endpoints are only registered when a datasource is configured, so without the profile `/api/cards` answers 404.
 
 ## Database migrations (Flyway)
 

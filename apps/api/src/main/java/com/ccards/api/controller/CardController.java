@@ -2,6 +2,7 @@ package com.ccards.api.controller;
 
 import java.util.UUID;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -14,6 +15,7 @@ import com.ccards.api.generated.model.CardPage;
 import com.ccards.api.repository.LoyaltyCard;
 import com.ccards.api.service.CardService;
 
+@ConditionalOnProperty("spring.datasource.url") // no database in the default profile, so no cards
 @RestController
 public class CardController implements CardsApi {
 

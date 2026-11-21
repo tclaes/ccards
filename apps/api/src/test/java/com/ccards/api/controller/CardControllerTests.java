@@ -32,7 +32,7 @@ import com.ccards.api.service.CardNotFoundException;
 import com.ccards.api.service.CardService;
 
 /** Web layer only: the service is mocked, so no database or Docker is needed. */
-@WebMvcTest(CardController.class)
+@WebMvcTest(controllers = CardController.class, properties = "spring.datasource.url=jdbc:unused")
 @Import({ GlobalExceptionHandler.class, CardMapperImpl.class })
 class CardControllerTests {
 

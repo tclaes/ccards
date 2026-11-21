@@ -34,6 +34,9 @@ Add `org.mapstruct:mapstruct` and the `mapstruct-processor` via `maven-compiler-
 ### D5. 404 via a domain exception and the global handler
 `CardNotFoundException extends RuntimeException` (message includes the id, for the log only). `GlobalExceptionHandler` gets one `@ExceptionHandler` returning `ProblemDetail.forStatusAndDetail(NOT_FOUND, "Card not found.")` through `handleExceptionInternal`, which already sets `instance`. The id appears only in the generic detail text if at all, never an exception message, per the coding style. *Alternative: `ResponseStatusException` in the service* — rejected: puts HTTP in the service layer.
 
+### D5a. Card beans exist only with a datasource
+The default profile has no DataSource, hence no repositories, yet must keep starting (add-flyway-migrations, local-dev-stack). `CardService` and `CardController` carry `@ConditionalOnProperty("spring.datasource.url")`, the same gate `AuditingConfig` uses (`@ConditionalOnBean` cannot be used on scanned classes). Without a database `/api/cards` answers the standard 404 problem. `CardControllerTests` sets the property so the controller is registered.
+
 ### D6. Tests
 - `CardControllerTests`: `@WebMvcTest(CardController.class)` with `@MockitoBean CardService`, importing `GlobalExceptionHandler` and the mapper (the Spring-generated `CardMapperImpl`), asserting status, JSON body, ordering/paging arguments passed to the service, 404 problem body, 400 for `size=0`/`size=101`/malformed uuid, and absence of `ownerId`. Docker-free.
 - `CardMapperTests`: plain unit test of the mapping including the `Instant` conversion and optional fields.
