@@ -124,8 +124,12 @@ class CardControllerTests {
 		when(service.list(any(Pageable.class)))
 			.thenReturn(new PageImpl<>(List.of(CardTestData.card(id, "Colruyt")), PageRequest.of(0, 20), 1));
 
-		mvc.perform(get("/api/cards/{id}", id)).andExpect(jsonPath("$.ownerId").doesNotExist());
-		mvc.perform(get("/api/cards")).andExpect(jsonPath("$.content[0].ownerId").doesNotExist());
+		mvc.perform(get("/api/cards/{id}", id))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.ownerId").doesNotExist());
+		mvc.perform(get("/api/cards"))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.content[0].ownerId").doesNotExist());
 	}
 
 	@Test
