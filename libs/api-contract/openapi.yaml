@@ -11,6 +11,7 @@ servers:
     description: Local development
 tags:
   - name: Health
+  - name: Cards
 paths:
   /api/health:
     get:
@@ -24,6 +25,65 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Health'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /api/cards:
+    get:
+      tags: [Cards]
+      operationId: listCards
+      summary: List loyalty cards, one page at a time (ordered by name)
+      parameters:
+        - name: page
+          in: query
+          description: Zero-based page index
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+            default: 0
+        - name: size
+          in: query
+          description: Number of cards per page
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: One page of cards
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CardPage'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /api/cards/{id}:
+    get:
+      tags: [Cards]
+      operationId: getCard
+      summary: Get one loyalty card
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: The card
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Card'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalServerError'
 components:
@@ -88,6 +148,62 @@ components:
         message:
           type: string
           example: must not be blank
+    BarcodeType:
+      type: string
+      enum: [CODE_128, EAN_13, EAN_8, UPC_A, QR_CODE]
+    Card:
+      type: object
+      required: [id, name, store, cardNumber, barcodeType, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          example: Albert Heijn bonus card
+        store:
+          type: string
+          example: Albert Heijn
+        cardNumber:
+          type: string
+          example: '2620000012345'
+        barcodeType:
+          $ref: '#/components/schemas/BarcodeType'
+        color:
+          type: string
+          nullable: true
+          example: '#00a0e2'
+        note:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    CardPage:
+      type: object
+      required: [content, page, size, totalElements, totalPages]
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
+        page:
+          type: integer
+          format: int32
+          description: Zero-based index of this page
+        size:
+          type: integer
+          format: int32
+          description: Requested page size
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+          format: int32
     Health:
       type: object
       required: [status]
