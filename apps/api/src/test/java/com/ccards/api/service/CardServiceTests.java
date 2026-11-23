@@ -19,11 +19,14 @@ import com.ccards.api.repository.BarcodeType;
 import com.ccards.api.repository.LoyaltyCard;
 import com.ccards.api.repository.LoyaltyCardRepository;
 
+import jakarta.validation.Validation;
+
 class CardServiceTests {
 
 	private final LoyaltyCardRepository repository = mock(LoyaltyCardRepository.class);
 
-	private final CardService service = new CardService(repository);
+	private final CardService service = new CardService(repository, Validation.buildDefaultValidatorFactory().getValidator(),
+			new CardPatchReader(), UUID.randomUUID());
 
 	private static LoyaltyCard card(UUID id) {
 		LoyaltyCard card = new LoyaltyCard("Name", "Store", "123", BarcodeType.QR_CODE, UUID.randomUUID());

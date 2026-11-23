@@ -16,6 +16,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 
 @Entity
 @Table(name = "loyalty_card")
@@ -25,6 +26,10 @@ public class LoyaltyCard {
 	@Id
 	@GeneratedValue(strategy = GenerationType.UUID)
 	private UUID id;
+
+	/** Optimistic locking: Hibernate increments it on every update and rejects a stale write. */
+	@Version
+	private Long version;
 
 	@Column(nullable = false)
 	private String name;
@@ -68,6 +73,8 @@ public class LoyaltyCard {
 	}
 
 	public UUID getId() { return id; }
+
+	public Long getVersion() { return version; }
 
 	public String getName() { return name; }
 
