@@ -11,6 +11,7 @@ servers:
     description: Local development
 tags:
   - name: Health
+  - name: Cards
 paths:
   /api/health:
     get:
@@ -26,6 +27,85 @@ paths:
                 $ref: '#/components/schemas/Health'
         '500':
           $ref: '#/components/responses/InternalServerError'
+  /api/cards:
+    post:
+      tags: [Cards]
+      operationId: createCard
+      summary: Create a loyalty card
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CardInput'
+      responses:
+        '201':
+          description: The card was created
+          headers:
+            Location:
+              description: URL of the new card
+              schema:
+                type: string
+                example: /api/cards/6f1c0c0e-6f0b-4f5e-9d49-0c1d5e0f8a11
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Card'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /api/cards/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    patch:
+      tags: [Cards]
+      operationId: patchCard
+      summary: Partially update a loyalty card (JSON Merge Patch, RFC 7396)
+      description: |
+        Fields present in the body are changed, absent fields are kept and
+        `null` clears an optional field (`color`, `note`). `version` is
+        required and must equal the version the client last read.
+      requestBody:
+        required: true
+        x-codegen-request-body-name: cardPatch
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/CardPatch'
+      responses:
+        '200':
+          description: The updated card
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Card'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      tags: [Cards]
+      operationId: deleteCard
+      summary: Delete a loyalty card
+      responses:
+        '204':
+          description: The card was deleted
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
 components:
   responses:
     BadRequest:
@@ -36,6 +116,18 @@ components:
             $ref: '#/components/schemas/ValidationProblem'
     NotFound:
       description: The resource does not exist
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    Conflict:
+      description: The resource was changed by someone else since it was read
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    UnsupportedMediaType:
+      description: The request content type is not supported for this operation
       content:
         application/problem+json:
           schema:
@@ -88,6 +180,81 @@ components:
         message:
           type: string
           example: must not be blank
+    BarcodeType:
+      type: string
+      enum: [CODE_128, EAN_13, EAN_8, UPC_A, QR_CODE]
+    CardInput:
+      type: object
+      required: [name, store, cardNumber, barcodeType]
+      properties:
+        name:
+          type: string
+          maxLength: 100
+          example: Groceries
+        store:
+          type: string
+          maxLength: 100
+          example: Delhaize
+        cardNumber:
+          type: string
+          maxLength: 100
+          description: Must be valid for `barcodeType` (digits and check digit for EAN-13, EAN-8, UPC-A)
+          example: '4006381333931'
+        barcodeType:
+          $ref: '#/components/schemas/BarcodeType'
+        color:
+          type: string
+          maxLength: 32
+          example: '#ff8800'
+        note:
+          type: string
+          maxLength: 1000
+    Card:
+      allOf:
+        - $ref: '#/components/schemas/CardInput'
+        - type: object
+          required: [id, version, createdAt, updatedAt]
+          properties:
+            id:
+              type: string
+              format: uuid
+            version:
+              type: integer
+              format: int64
+              description: Send this back in `PATCH` to detect concurrent changes
+            createdAt:
+              type: string
+              format: date-time
+            updatedAt:
+              type: string
+              format: date-time
+    CardPatch:
+      type: object
+      description: JSON Merge Patch body; the same fields as CardInput, all optional, plus the required `version`
+      required: [version]
+      properties:
+        name:
+          type: string
+          maxLength: 100
+        store:
+          type: string
+          maxLength: 100
+        cardNumber:
+          type: string
+          maxLength: 100
+        barcodeType:
+          $ref: '#/components/schemas/BarcodeType'
+        color:
+          type: string
+          maxLength: 32
+          nullable: true
+        note:
+          type: string
+          maxLength: 1000
+          nullable: true
+        version:
+          type: integer
+          format: int64
     Health:
       type: object
       required: [status]

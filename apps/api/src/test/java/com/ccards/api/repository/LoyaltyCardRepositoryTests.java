@@ -13,6 +13,7 @@ import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabas
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.context.annotation.Import;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.testcontainers.junit.jupiter.Container;
@@ -157,6 +158,33 @@ class LoyaltyCardRepositoryTests {
 	@Test
 	void ownerWithoutCardsGetsAnEmptyList() {
 		assertThat(repository.findAllByOwnerId(UUID.randomUUID())).isEmpty();
+	}
+
+	@Test
+	void versionStartsAtZeroAndGrowsWithEveryUpdate() {
+		LoyaltyCard card = repository.saveAndFlush(newCard(BarcodeType.EAN_13, OWNER));
+		assertThat(card.getVersion()).isZero();
+
+		card.setName("Renamed");
+		repository.saveAndFlush(card);
+
+		assertThat(card.getVersion()).isEqualTo(1);
+	}
+
+	@Test
+	void staleUpdateIsRejected() {
+		UUID id = repository.saveAndFlush(newCard(BarcodeType.EAN_13, OWNER)).getId();
+		flushAndClear();
+		LoyaltyCard first = repository.findById(id).orElseThrow();
+		entityManager.detach(first);
+		LoyaltyCard second = repository.findById(id).orElseThrow();
+		second.setName("Second wins");
+		repository.saveAndFlush(second);
+
+		first.setName("First is too late");
+
+		assertThatThrownBy(() -> repository.saveAndFlush(first))
+			.isInstanceOf(ObjectOptimisticLockingFailureException.class);
 	}
 
 }

@@ -47,3 +47,7 @@ management:
       # that uses probes (CC-37).
       probes:
         enabled: false
+
+ccards:
+  # Owner of every new card until users exist (CC-16).
+  default-owner-id: 00000000-0000-0000-0000-000000000001

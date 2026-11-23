@@ -136,6 +136,24 @@ The migration tests (`FlywayMigrationTests`) start a throwaway PostgreSQL with T
 - **Ownership is a plain `ownerId` UUID**, not a relation and not a foreign key: there is no users table yet (CC-16), and sharing (CC-29/CC-30) must not depend on a one-to-one owner link. Who may see a card is decided in the service layer.
 - `LoyaltyCardRepositoryTests` (`@DataJpaTest` + Testcontainers) run like the migration tests: skipped without Docker.
 
+## Card write API
+
+`POST /api/cards`, `PATCH /api/cards/{id}` and `DELETE /api/cards/{id}` (contract: `libs/api-contract/openapi.yaml`, code: `CardController` -> `CardService`).
+
+- **Create:** `201` with `Location` and the card, including its `id` and `version`. `ownerId` cannot be sent; until users exist (CC-16) every card gets the owner in `ccards.default-owner-id`.
+- **Update is a JSON Merge Patch** ([RFC 7396](https://www.rfc-editor.org/rfc/rfc7396)), sent as `application/merge-patch+json`: a field you leave out keeps its value, `null` clears `color` or `note`, and `version` (from your last read) is required. Unknown fields, a wrong type or a blank required field give `400`; plain `application/json` gives `415`.
+- **Concurrent edits:** the `version` must equal the stored one, otherwise `409` and nothing changes. A successful update returns the next version.
+- **Card number:** `EAN_13`, `EAN_8` and `UPC_A` need 13, 8 and 12 digits with a correct check digit; `CODE_128` and `QR_CODE` take any non-blank text (the rule is `@ValidCardNumber` in `com.ccards.api.service`). A patch is validated after merging, so changing only `barcodeType` re-checks the stored number.
+- **Needs a database:** the card beans are only created when `spring.datasource.url` is set (the `local` profile does), so the default profile still starts without a database and simply has no `/api/cards`.
+- **Delete:** `204`; an unknown id gives `404` (also for `PATCH`).
+
+```sh
+curl -i -X POST localhost:8080/api/cards -H 'Content-Type: application/json' \
+  -d '{"name":"Groceries","store":"Delhaize","cardNumber":"4006381333931","barcodeType":"EAN_13"}'
+curl -i -X PATCH localhost:8080/api/cards/<id> -H 'Content-Type: application/merge-patch+json' \
+  -d '{"version":0,"note":null,"name":"Renamed"}'
+```
+
 ## Continuous integration
 
 `.github/workflows/ci.yml` runs on every pull request and on every push to `main`. It installs Node (from `.nvmrc`) and Java 21, then runs lint, test and build for the **affected** projects only:

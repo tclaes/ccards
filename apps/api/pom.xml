@@ -126,6 +126,10 @@
 							<apiPackage>com.ccards.api.generated.api</apiPackage>
 							<modelPackage>com.ccards.api.generated.model</modelPackage>
 							<generateSupportingFiles>false</generateSupportingFiles>
+							<!-- Merge patch must tell "absent" from null, which a DTO cannot; the controller gets the raw JSON tree. -->
+							<schemaMappings>
+								<schemaMapping>CardPatch=tools.jackson.databind.JsonNode</schemaMapping>
+							</schemaMappings>
 							<configOptions>
 								<interfaceOnly>true</interfaceOnly>
 								<skipDefaultInterface>true</skipDefaultInterface>
