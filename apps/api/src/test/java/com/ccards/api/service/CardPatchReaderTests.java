@@ -62,6 +62,14 @@ class CardPatchReaderTests {
 	}
 
 	@Test
+	void barcodeTypeMustBeAString() {
+		assertThatThrownBy(() -> read("""
+				{"version": 0, "barcodeType": []}"""))
+			.isInstanceOfSatisfying(InvalidPatchException.class,
+					ex -> assertThat(ex.getViolations()).containsOnlyKeys("barcodeType"));
+	}
+
+	@Test
 	void versionMustBeAnInteger() {
 		assertThatThrownBy(() -> read("""
 				{"version": "3"}"""))

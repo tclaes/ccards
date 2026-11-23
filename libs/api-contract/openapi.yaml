@@ -255,10 +255,12 @@ components:
         color:
           type: string
           maxLength: 32
+          nullable: true
           example: '#ff8800'
         note:
           type: string
           maxLength: 1000
+          nullable: true
     Card:
       allOf:
         - $ref: '#/components/schemas/CardInput'

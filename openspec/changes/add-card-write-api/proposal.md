@@ -13,6 +13,8 @@ The backend stores loyalty cards (CC-08) but offers no way to create, change or 
 - Service methods are `@Transactional`; `PATCH` and `DELETE` of an unknown id return 404 (problem).
 - **BREAKING (internal only)**: `LoyaltyCard` gains a `version` field; nothing outside the API reads the entity yet.
 
+Issue #10 names `PUT` for updates; this change deliberately provides `PATCH` (JSON Merge Patch) instead, as decided with the issue owner, and does not add `PUT`.
+
 Out of scope: `GET` list/detail and DTO mapping libraries (CC-09), authentication and real ownership checks (CC-16, CC-19), sharing (CC-29/CC-30), barcode rendering (CC-13), web UI.
 
 Assumption: until users exist (CC-16), `POST` assigns cards to a fixed placeholder owner id taken from configuration; `ownerId` is never accepted from the client.

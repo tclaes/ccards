@@ -148,9 +148,10 @@ The migration tests (`FlywayMigrationTests`) start a throwaway PostgreSQL with T
 - **Delete:** `204`; an unknown id gives `404` (also for `PATCH`).
 
 ```sh
-curl -i -X POST localhost:8080/api/cards -H 'Content-Type: application/json' \
-  -d '{"name":"Groceries","store":"Delhaize","cardNumber":"4006381333931","barcodeType":"EAN_13"}'
-curl -i -X PATCH localhost:8080/api/cards/<id> -H 'Content-Type: application/merge-patch+json' \
+CARD_ID=$(curl -s -X POST localhost:8080/api/cards -H 'Content-Type: application/json' \
+  -d '{"name":"Groceries","store":"Delhaize","cardNumber":"4006381333931","barcodeType":"EAN_13"}' \
+  | python3 -c 'import json,sys; print(json.load(sys.stdin)["id"])')
+curl -i -X PATCH "localhost:8080/api/cards/${CARD_ID}" -H 'Content-Type: application/merge-patch+json' \
   -d '{"version":0,"note":null,"name":"Renamed"}'
 ```
 

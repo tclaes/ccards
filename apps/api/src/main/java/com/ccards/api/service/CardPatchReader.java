@@ -76,8 +76,12 @@ class CardPatchReader {
 		if (node.isNull()) {
 			return null;
 		}
+		if (!node.isString()) {
+			violations.put("barcodeType", "must be a string");
+			return current;
+		}
 		try {
-			return BarcodeType.valueOf(node.asString());
+			return BarcodeType.valueOf(node.stringValue());
 		}
 		catch (IllegalArgumentException ex) {
 			violations.put("barcodeType", "must be one of " + Arrays.toString(BarcodeType.values()));
