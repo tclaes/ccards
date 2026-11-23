@@ -3,136 +3,153 @@ package com.ccards.api.controller;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.time.Instant;
-import java.util.Map;
+import java.util.List;
 import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
-import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.util.ReflectionTestUtils;
-import org.springframework.test.web.servlet.assertj.MockMvcTester;
-import org.springframework.test.web.servlet.assertj.MockMvcTester.MockMvcRequestBuilder;
+import org.springframework.test.web.servlet.MockMvc;
 
-import com.ccards.api.repository.BarcodeType;
+import com.ccards.api.error.GlobalExceptionHandler;
 import com.ccards.api.repository.LoyaltyCard;
 import com.ccards.api.service.CardNotFoundException;
 import com.ccards.api.service.CardService;
-import com.ccards.api.service.InvalidPatchException;
 
-@WebMvcTest(value = CardController.class, properties = "spring.datasource.url=unused") // the controller only exists with a datasource
+/** Web layer only: the service is mocked, so no database or Docker is needed. */
+@WebMvcTest(controllers = CardController.class, properties = "spring.datasource.url=jdbc:unused")
+@Import({ GlobalExceptionHandler.class, CardMapperImpl.class })
 class CardControllerTests {
 
-	private static final MediaType MERGE_PATCH = MediaType.valueOf("application/merge-patch+json");
-
-	private static final UUID ID = UUID.randomUUID();
+	private static final MediaType PROBLEM_JSON = MediaType.APPLICATION_PROBLEM_JSON;
 
 	@Autowired
-	private MockMvcTester mvc;
+	private MockMvc mvc;
 
 	@MockitoBean
 	private CardService service;
 
-	private LoyaltyCard storedCard() {
-		LoyaltyCard card = new LoyaltyCard("Groceries", "Delhaize", "4006381333931", BarcodeType.EAN_13,
-				UUID.randomUUID());
-		ReflectionTestUtils.setField(card, "id", ID);
-		ReflectionTestUtils.setField(card, "version", 0L);
-		Instant now = Instant.parse("2026-01-01T10:00:00Z");
-		ReflectionTestUtils.setField(card, "createdAt", now);
-		ReflectionTestUtils.setField(card, "updatedAt", now);
-		return card;
-	}
+	@Test
+	void listsTheFirstPageWithDefaultsAndFixedOrder() throws Exception {
+		UUID id = UUID.randomUUID();
+		LoyaltyCard card = CardTestData.card(id, "Albert Heijn");
+		when(service.list(any(Pageable.class))).thenReturn(new PageImpl<>(List.of(card), PageRequest.of(0, 20), 25));
 
-	private MockMvcRequestBuilder patch(String body) {
-		return mvc.patch().uri("/api/cards/{id}", ID).contentType(MERGE_PATCH).content(body);
+		mvc.perform(get("/api/cards"))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.content.length()").value(1))
+			.andExpect(jsonPath("$.content[0].id").value(id.toString()))
+			.andExpect(jsonPath("$.content[0].name").value("Albert Heijn"))
+			.andExpect(jsonPath("$.content[0].barcodeType").value("EAN_13"))
+			.andExpect(jsonPath("$.page").value(0))
+			.andExpect(jsonPath("$.size").value(20))
+			.andExpect(jsonPath("$.totalElements").value(25))
+			.andExpect(jsonPath("$.totalPages").value(2));
+
+		ArgumentCaptor<Pageable> captor = ArgumentCaptor.forClass(Pageable.class);
+		verify(service).list(captor.capture());
+		Pageable requested = captor.getValue();
+		assertThat(requested.getPageNumber()).isZero();
+		assertThat(requested.getPageSize()).isEqualTo(20);
+		assertThat(requested.getSort()).isEqualTo(Sort.by("name", "id"));
 	}
 
 	@Test
-	void createReturns201WithLocationAndBody() {
-		given(service.create(any())).willReturn(storedCard());
+	void passesExplicitPageAndSizeToTheService() throws Exception {
+		Pageable pageable = PageRequest.of(1, 5, Sort.by("name", "id"));
+		when(service.list(eq(pageable))).thenReturn(new PageImpl<>(List.of(), pageable, 5));
 
-		assertThat(mvc.post().uri("/api/cards").contentType(MediaType.APPLICATION_JSON).content("""
-				{"name":"Groceries","store":"Delhaize","cardNumber":"4006381333931","barcodeType":"EAN_13"}"""))
-			.hasStatus(201)
-			.headers().hasValue("Location", "http://localhost/api/cards/" + ID);
+		mvc.perform(get("/api/cards?page=1&size=5"))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.page").value(1))
+			.andExpect(jsonPath("$.size").value(5));
 	}
 
 	@Test
-	void createWithMissingFieldsListsEveryField() {
-		assertThat(mvc.post().uri("/api/cards").contentType(MediaType.APPLICATION_JSON).content("""
-				{"cardNumber":"1","barcodeType":"EAN_13"}"""))
-			.hasStatus(400)
-			.hasContentType(MediaType.APPLICATION_PROBLEM_JSON)
-			.bodyJson()
-			.extractingPath("$.errors[*].field").asArray().contains("name", "store");
+	void emptyListHasZeroTotals() throws Exception {
+		when(service.list(any(Pageable.class))).thenReturn(new PageImpl<>(List.of(), PageRequest.of(0, 20), 0));
+
+		mvc.perform(get("/api/cards"))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.content.length()").value(0))
+			.andExpect(jsonPath("$.totalElements").value(0))
+			.andExpect(jsonPath("$.totalPages").value(0));
 	}
 
 	@Test
-	void createWithTooLongNameIsRejected() {
-		assertThat(mvc.post().uri("/api/cards").contentType(MediaType.APPLICATION_JSON).content("""
-				{"name":"%s","store":"s","cardNumber":"1","barcodeType":"CODE_128"}""".formatted("x".repeat(101))))
-			.hasStatus(400)
-			.bodyJson().extractingPath("$.errors[0].field").isEqualTo("name");
+	void invalidPageParametersAreProblem400() throws Exception {
+		for (String query : List.of("size=0", "size=101", "page=-1")) {
+			String name = query.substring(0, query.indexOf('='));
+			mvc.perform(get("/api/cards?" + query))
+				.andExpect(status().isBadRequest())
+				.andExpect(content().contentTypeCompatibleWith(PROBLEM_JSON))
+				.andExpect(jsonPath("$.errors[0].field").value(name));
+		}
 	}
 
 	@Test
-	void patchReturns200() {
-		given(service.patch(eq(ID), any())).willReturn(storedCard());
+	void returnsOneCardById() throws Exception {
+		UUID id = UUID.randomUUID();
+		LoyaltyCard card = CardTestData.card(id, "Colruyt");
+		card.setColor("#ff0000");
+		when(service.get(id)).thenReturn(card);
 
-		assertThat(patch("""
-				{"version":0,"name":"Renamed"}""")).hasStatus(200)
-			.bodyJson().extractingPath("$.version").isEqualTo(0);
+		mvc.perform(get("/api/cards/{id}", id))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.id").value(id.toString()))
+			.andExpect(jsonPath("$.color").value("#ff0000"))
+			.andExpect(jsonPath("$.createdAt").exists())
+			.andExpect(jsonPath("$.updatedAt").exists());
 	}
 
 	@Test
-	void patchWithPlainJsonIs415() {
-		assertThat(mvc.patch().uri("/api/cards/{id}", ID).contentType(MediaType.APPLICATION_JSON).content("{}"))
-			.hasStatus(415)
-			.hasContentType(MediaType.APPLICATION_PROBLEM_JSON);
+	void doesNotExposeTheOwner() throws Exception {
+		UUID id = UUID.randomUUID();
+		when(service.get(id)).thenReturn(CardTestData.card(id, "Colruyt"));
+		when(service.list(any(Pageable.class)))
+			.thenReturn(new PageImpl<>(List.of(CardTestData.card(id, "Colruyt")), PageRequest.of(0, 20), 1));
+
+		mvc.perform(get("/api/cards/{id}", id))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.ownerId").doesNotExist());
+		mvc.perform(get("/api/cards"))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.content[0].ownerId").doesNotExist());
 	}
 
 	@Test
-	void patchOfUnknownCardIs404Problem() {
-		given(service.patch(eq(ID), any())).willThrow(new CardNotFoundException(ID));
+	void unknownIdIsProblem404WithoutLeakingTheExceptionMessage() throws Exception {
+		UUID id = UUID.randomUUID();
+		when(service.get(id)).thenThrow(new CardNotFoundException(id));
 
-		assertThat(patch("{\"version\":0}")).hasStatus(404).hasContentType(MediaType.APPLICATION_PROBLEM_JSON);
+		mvc.perform(get("/api/cards/{id}", id))
+			.andExpect(status().isNotFound())
+			.andExpect(content().contentTypeCompatibleWith(PROBLEM_JSON))
+			.andExpect(jsonPath("$.status").value(404))
+			.andExpect(jsonPath("$.detail").value("Card not found."))
+			.andExpect(jsonPath("$.instance").value("/api/cards/" + id));
 	}
 
 	@Test
-	void staleVersionIs409ProblemWithoutInternals() {
-		given(service.patch(eq(ID), any())).willThrow(new ObjectOptimisticLockingFailureException(LoyaltyCard.class, ID));
-
-		assertThat(patch("{\"version\":0}")).hasStatus(409)
-			.hasContentType(MediaType.APPLICATION_PROBLEM_JSON)
-			.bodyJson().extractingPath("$.detail").asString().doesNotContain("LoyaltyCard");
-	}
-
-	@Test
-	void unreadablePatchIs400WithFields() {
-		given(service.patch(eq(ID), any())).willThrow(new InvalidPatchException(Map.of("version", "must be the integer version last read")));
-
-		assertThat(patch("{}")).hasStatus(400)
-			.bodyJson().extractingPath("$.errors[0].field").isEqualTo("version");
-	}
-
-	@Test
-	void deleteReturns204() {
-		assertThat(mvc.delete().uri("/api/cards/{id}", ID)).hasStatus(204);
-	}
-
-	@Test
-	void deleteOfUnknownCardIs404Problem() {
-		doThrow(new CardNotFoundException(ID)).when(service).delete(ID);
-
-		assertThat(mvc.delete().uri("/api/cards/{id}", ID)).hasStatus(404)
-			.hasContentType(MediaType.APPLICATION_PROBLEM_JSON);
+	void malformedIdIsProblem400() throws Exception {
+		mvc.perform(get("/api/cards/not-a-uuid"))
+			.andExpect(status().isBadRequest())
+			.andExpect(content().contentTypeCompatibleWith(PROBLEM_JSON));
 	}
 
 }

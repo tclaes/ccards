@@ -28,6 +28,39 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
   /api/cards:
+    get:
+      tags: [Cards]
+      operationId: listCards
+      summary: List loyalty cards, one page at a time (ordered by name)
+      parameters:
+        - name: page
+          in: query
+          description: Zero-based page index
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+            default: 0
+        - name: size
+          in: query
+          description: Number of cards per page
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: One page of cards
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CardPage'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
     post:
       tags: [Cards]
       operationId: createCard
@@ -63,6 +96,23 @@ paths:
         schema:
           type: string
           format: uuid
+    get:
+      tags: [Cards]
+      operationId: getCard
+      summary: Get one loyalty card
+      responses:
+        '200':
+          description: The card
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Card'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
     patch:
       tags: [Cards]
       operationId: patchCard
@@ -255,6 +305,28 @@ components:
         version:
           type: integer
           format: int64
+    CardPage:
+      type: object
+      required: [content, page, size, totalElements, totalPages]
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
+        page:
+          type: integer
+          format: int32
+          description: Zero-based index of this page
+        size:
+          type: integer
+          format: int32
+          description: Requested page size
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+          format: int32
     Health:
       type: object
       required: [status]

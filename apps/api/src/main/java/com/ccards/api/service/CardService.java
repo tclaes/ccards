@@ -5,6 +5,8 @@ import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,13 +19,10 @@ import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Validator;
 import tools.jackson.databind.JsonNode;
 
-/**
- * Card writes. Each public method is one transaction: it all happens, or nothing does.
- * Only exists when a datasource is configured, so the default profile still starts without a database.
- */
+/** Card reads and writes. Each write is one transaction: it all happens, or nothing does. */
+@ConditionalOnProperty("spring.datasource.url") // no database in the default profile, so no cards
 @Service
-@ConditionalOnProperty("spring.datasource.url")
-@Transactional
+@Transactional(readOnly = true)
 public class CardService {
 
 	private final LoyaltyCardRepository repository;
@@ -42,6 +41,15 @@ public class CardService {
 		this.defaultOwnerId = defaultOwnerId;
 	}
 
+	public Page<LoyaltyCard> list(Pageable pageable) {
+		return repository.findAll(pageable);
+	}
+
+	public LoyaltyCard get(UUID id) {
+		return find(id);
+	}
+
+	@Transactional
 	public LoyaltyCard create(CardData data) {
 		validate(data);
 		LoyaltyCard card = new LoyaltyCard(data.name(), data.store(), data.cardNumber(), data.barcodeType(),
@@ -51,6 +59,7 @@ public class CardService {
 		return repository.saveAndFlush(card);
 	}
 
+	@Transactional
 	public LoyaltyCard patch(UUID id, JsonNode body) {
 		LoyaltyCard card = find(id);
 		CardPatchReader.Patch patch = patchReader.read(body, toData(card));
@@ -63,6 +72,7 @@ public class CardService {
 		return repository.saveAndFlush(card);
 	}
 
+	@Transactional
 	public void delete(UUID id) {
 		repository.delete(find(id));
 	}

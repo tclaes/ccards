@@ -1,5 +1,6 @@
 package com.ccards.api.error;
 
+import com.ccards.api.service.CardNotFoundException;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Path;
 import java.net.URI;
@@ -95,6 +96,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
 	@ExceptionHandler(CardNotFoundException.class)
 	protected ResponseEntity<Object> handleCardNotFound(CardNotFoundException ex, WebRequest request) {
+		// Never echo ex.getMessage(): keep the response generic.
 		ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, "Card not found.");
 		return handleExceptionInternal(ex, problem, new HttpHeaders(), HttpStatus.NOT_FOUND, request);
 	}
