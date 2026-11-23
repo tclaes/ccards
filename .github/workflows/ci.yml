@@ -43,6 +43,16 @@ jobs:
 
       - run: npm ci
 
+      # Several Nx tasks call openapi-generator-cli. Left alone, each one
+      # downloads the generator JAR on first use and parallel tasks race on
+      # it. Fetch it once here (a no-op on a cache hit) before they start.
+      - uses: actions/cache@v4
+        with:
+          path: node_modules/@openapitools/openapi-generator-cli/versions
+          key: openapi-generator-${{ hashFiles('openapitools.json') }}
+
+      - run: npx openapi-generator-cli version
+
       # Docker is preinstalled on the runner, so the Testcontainers-based
       # migration tests in `api` run instead of being skipped.
       - run: npx nx affected -t lint test build --parallel=3

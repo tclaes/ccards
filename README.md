@@ -164,7 +164,7 @@ npx nx affected -t lint test build   # what CI runs
 npx nx run-many -t lint test build --all   # everything, regardless of changes
 ```
 
-Locally, `affected` compares against `main` by default. Changes to shared files (`package.json`, `nx.json`, `.nvmrc`, `.github/workflows/`, ...) affect every project. A change that touches no project (for example only `README.md`) passes without running any task. `api` has no lint target yet (Java lint is not set up); it is covered by test and build. The runner has Docker, so `FlywayMigrationTests` run in CI instead of being skipped.
+Locally, `affected` compares against `main` by default. Changes to shared files (`package.json`, `nx.json`, `.nvmrc`, `.github/workflows/`, ...) affect every project. A change that touches no project (for example only `README.md`) passes without running any task. `api` has no lint target yet (Java lint is not set up); it is covered by test and build. The runner has Docker, so `FlywayMigrationTests` run in CI instead of being skipped. Before the Nx run, CI downloads the OpenAPI generator JAR once (`npx openapi-generator-cli version`) and caches it keyed on `openapitools.json`, so parallel tasks never race on that download.
 
 The single job is named `CI`. That name is the required status check on `main`; do not rename it without updating the protection rule. Branch protection is a repository setting (needs admin rights) and was applied once with:
 
