@@ -33,6 +33,7 @@ function label(count: number): string {
 
 - Never swallow an error. A `catch` block handles it: show it, map it to a result, or rethrow it. An empty `catch`, or one holding only a comment, is not handling. If another layer already reported the failure, opt out of that layer instead (for example `SKIP_ERROR_NOTIFICATION`) and handle the error where you catch it.
 - Name a value that code compares against or hands to other code (a dialog's return value, a status string) as a constant in a `<name>.model.ts` file, not as a string literal repeated in several places.
+- Prefer composition over inheritance. Share behaviour through a helper function, an injected service, `hostDirectives` or content projection, not by extending a class. In Angular, do not make an abstract base `@Directive()` or component to share a few inputs or computed state: put the logic in a function and call it from each component (for example `fieldErrorState`). Extend a class only when a framework requires it or implements a contract for you (Spring's `ResponseEntityExceptionHandler`, `Error`), and never to reuse code alone.
 - A new dependency needs a reason a few lines of code cannot answer.
 
 In this repo: `GlobalExceptionHandler` extends Spring's base class and overrides only what differs; `NotificationService` is one signal and a timer map, not an event bus.
