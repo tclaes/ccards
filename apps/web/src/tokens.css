@@ -11,6 +11,7 @@
   --space-2: 0.5rem;
   --space-3: 0.75rem;
   --space-4: 1rem;
+  --space-5: 1.5rem;
 
   /* Shape and elevation */
   --border-width: 1px;
@@ -23,7 +24,9 @@
 
   /* Sizes */
   --size-barcode-max: 40rem;
+  --size-icon: 1.125rem;
+  --size-icon-button: 2.25rem;
   --size-notification-max: 28rem;
-  --size-tile-height: 6rem;
+  --size-tile-height: 7rem;
   --size-tile-min: 10rem;
 }
