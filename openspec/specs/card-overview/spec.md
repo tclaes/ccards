@@ -6,7 +6,7 @@ Shows the user their loyalty cards on one page, and tells them clearly while car
 ## Requirements
 
 ### Requirement: Card grid
-The web app SHALL show the cards returned by the API as a grid of tiles at `/cards`, which is also the page shown for the root URL. Each tile SHALL display the card's name and store and SHALL use the card's `color` as its background.
+The web app SHALL show the cards returned by the API as a grid of tiles at `/cards`, which is also the page shown for the root URL. Each tile SHALL display the card's name and store. When the card's `color` is a `#rgb` or `#rrggbb` value, the tile SHALL use it as its background. Otherwise, including when `color` is absent, the tile SHALL use the default tile background.
 
 #### Scenario: Cards are shown
 - **WHEN** the API returns three cards
@@ -15,6 +15,10 @@ The web app SHALL show the cards returned by the API as a grid of tiles at `/car
 #### Scenario: Tile uses the card colour
 - **WHEN** a card has the colour `#e30613`
 - **THEN** its tile has that background colour
+
+#### Scenario: Colour that is not a hex value
+- **WHEN** a card has the colour `red`
+- **THEN** its tile uses the default tile colour and its name and store are still readable
 
 #### Scenario: Card without a colour
 - **WHEN** a card has no `color`

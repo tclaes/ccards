@@ -32,7 +32,7 @@ Stylelint SHALL report an error for hex colours, named colours and colour functi
 - **THEN** `nx lint web` does not report it
 
 ### Requirement: Colour tokens live in colors.css
-The web app SHALL define every `--color-*` design token in `apps/web/src/colors.css` and none in `tokens.css`. `colors.css` SHALL be loaded before `tokens.css`.
+The web app SHALL define every `--color-*` design token in `apps/web/src/colors.css` and none in `tokens.css`. `colors.css` SHALL be loaded before `tokens.css`. This applies to the global stylesheets: a component may still re-declare a `--color-*` custom property inside its own `:host` rule to re-resolve it for that component (for example under a forced light scheme), because that is a scoped override, not a design token.
 
 #### Scenario: Colours are defined in one file
 - **WHEN** a developer searches the global stylesheets in `apps/web/src` for `--color-` declarations
