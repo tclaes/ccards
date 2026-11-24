@@ -14,8 +14,12 @@ export default [
         'error',
         {
           enforceBuildableLibDependency: true,
-          // `@ui` is the web app's own UI library alias, not another project.
-          allow: ['^.*/eslint(\\.base)?\\.config\\.[cm]?[jt]s$', '^@ui$'],
+          // `@ui` and `@shared` are the web app's own aliases, not another project.
+          allow: [
+            '^.*/eslint(\\.base)?\\.config\\.[cm]?[jt]s$',
+            '^@ui$',
+            '^@shared/',
+          ],
           depConstraints: [
             {
               sourceTag: '*',

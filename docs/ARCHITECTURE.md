@@ -27,6 +27,7 @@ Both sides generate their types from `libs/api-contract/openapi.yaml`. Change th
 
 ```text
 ui/         Dumb, reusable components (the UI library)
+shared/     Framework-level helpers with no components, reusable across forms and features (`shared/utils/form`)
 core/       App-wide singletons and smart components: services, interceptors, shells
 features/   One folder per feature: smart container + its feature-specific dumb parts
 ```
@@ -54,6 +55,12 @@ Direction of dependencies: `features` and `core` may import from `ui`; `ui` neve
 Example in this repo: `NotificationHost` (smart, `core/notification`) reads `NotificationService` and renders one `Toast` (dumb, `ui/toast`) per message. `Toast` knows nothing about the service; it emits `dismissed`, `paused` and `resumed`, and the host turns those into service calls.
 
 When unsure, ask: "could I use this component on another screen with different data and no providers?" If yes, it is dumb and belongs in `ui/`. If it needs a service, it is smart.
+
+### Shared helpers (`shared/`)
+
+- Plain functions and types that more than one form or feature can use, for example the `requiredText` validator in `shared/utils/form`. Nothing feature-specific lives here, and nothing in it imports from `features/`, `core/` or `ui/`.
+- Import them with the `@shared/*` path alias (`from '@shared/utils/form/required-text'`), not a relative path.
+- A helper used by one form only stays in that form's folder until a second form needs it (YAGNI).
 
 ### The UI library (`ui/`)
 

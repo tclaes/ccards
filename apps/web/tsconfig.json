@@ -11,6 +11,7 @@
     "module": "preserve",
     "paths": {
       "@ccards/api-client": ["../../libs/api-client/src/index.ts"],
+      "@shared/*": ["./src/app/shared/*"],
       "@ui": ["./src/app/ui/index.ts"]
     }
   },

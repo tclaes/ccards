@@ -1,16 +1,14 @@
 import { Component, input, linkedSignal, output } from '@angular/core';
 import {
   FormField,
-  type SchemaPath,
   type TreeValidationResult,
   form,
   maxLength,
-  required,
-  requiredError,
   submit,
   validate,
 } from '@angular/forms/signals';
 import { RouterLink } from '@angular/router';
+import { requiredText } from '@shared/utils/form/required-text';
 import { InputField, TextareaField } from '@ui';
 import { cardNumberError } from './card-number';
 import {
@@ -19,17 +17,6 @@ import {
   EMPTY_CARD_FORM,
   type FormProblem,
 } from './card-form.model';
-
-/** Required, and not just whitespace, like the API's `@NotBlank`. */
-function requiredText(path: SchemaPath<string>, label: string): void {
-  const message = `${label} is required`;
-  required(path, { message });
-  validate(path, ({ value }) =>
-    value() !== '' && value().trim() === ''
-      ? requiredError({ message })
-      : undefined,
-  );
-}
 
 function formField(name: string | undefined): keyof CardFormValue | undefined {
   return name !== undefined && name in EMPTY_CARD_FORM
