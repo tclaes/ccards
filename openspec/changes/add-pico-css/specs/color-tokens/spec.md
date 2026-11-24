@@ -17,7 +17,7 @@ The web app SHALL NOT write colour values by hand. Colour tokens in `apps/web/sr
 - **THEN** every token and component that uses them changes colour without any other file being edited
 
 ### Requirement: Lint rejects colour literals
-Stylelint SHALL report an error for hex colours, named colours and colour functions (`rgb`, `rgba`, `hsl`, `hsla`, `hwb`, `lab`, `lch`, `oklab`, `oklch`) in every CSS file under `apps/web/src`.
+Stylelint SHALL report an error for hex colours, named colours and colour functions (`rgb`, `rgba`, `hsl`, `hsla`, `hwb`, `lab`, `lch`, `oklab`, `oklch`, `color`, `light-dark`) in every CSS file under `apps/web/src`.
 
 #### Scenario: Hex colour in a component
 - **WHEN** a component stylesheet contains `color: #123456`

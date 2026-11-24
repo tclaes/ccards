@@ -26,7 +26,9 @@ export default {
     // Colours come from Pico's --pico-* variables, never from literals.
     'color-no-hex': true,
     'color-named': 'never',
-    'function-disallowed-list': [[/^(rgba?|hsla?|hwb|lab|lch|oklab|oklch)$/i]],
+    'function-disallowed-list': [
+      [/^(rgba?|hsla?|hwb|lab|lch|oklab|oklch|color|light-dark)$/i],
+    ],
     'scale-unlimited/declaration-strict-value': [
       tokenProperties,
       {
