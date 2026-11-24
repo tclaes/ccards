@@ -7,8 +7,10 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
+import com.ccards.api.service.BarcodeNotRenderableException;
 import com.ccards.api.service.CardNotFoundException;
 import com.ccards.api.service.InvalidPatchException;
+import com.ccards.api.service.UnsupportedFormatException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.MessageSourceResolvable;
@@ -99,6 +101,22 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 		// Never echo ex.getMessage(): keep the response generic.
 		ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, "Card not found.");
 		return handleExceptionInternal(ex, problem, new HttpHeaders(), HttpStatus.NOT_FOUND, request);
+	}
+
+	@ExceptionHandler(UnsupportedFormatException.class)
+	protected ResponseEntity<Object> handleUnsupportedFormat(UnsupportedFormatException ex, WebRequest request) {
+		return validationProblem(ex, List.of(new FieldViolation("format", "must be one of: png, svg")),
+				new HttpHeaders(), request);
+	}
+
+	@ExceptionHandler(BarcodeNotRenderableException.class)
+	protected ResponseEntity<Object> handleBarcodeNotRenderable(BarcodeNotRenderableException ex,
+			WebRequest request) {
+		// Never echo the card number or ex.getMessage(); the log has the card id.
+		log.warn("{}", ex.getMessage(), ex.getCause());
+		ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.UNPROCESSABLE_ENTITY,
+				"The card number cannot be drawn as its barcode type.");
+		return handleExceptionInternal(ex, problem, new HttpHeaders(), HttpStatus.UNPROCESSABLE_ENTITY, request);
 	}
 
 	@ExceptionHandler(ObjectOptimisticLockingFailureException.class)
