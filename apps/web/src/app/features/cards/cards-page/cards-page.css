@@ -7,7 +7,7 @@
   align-items: center;
   display: flex;
   gap: var(--space-2);
-  margin-block-end: var(--space-5);
+  margin-block-end: var(--space-4);
 }
 
 .brand-name {
@@ -28,7 +28,9 @@
 }
 
 .add {
+  font-size: var(--font-size-sm);
   margin: 0;
+  padding: var(--space-2) var(--space-4);
   white-space: nowrap;
 }
 

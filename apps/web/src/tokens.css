@@ -4,6 +4,7 @@
 :root {
   /* Typography: every size derives from the base. */
   --font-size-base: 1rem;
+  --font-size-sm: calc(var(--font-size-base) * 0.875);
   --font-size-lg: calc(var(--font-size-base) * 1.25);
 
   /* Spacing */
