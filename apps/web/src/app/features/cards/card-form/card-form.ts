@@ -1,16 +1,17 @@
 import { Component, input, linkedSignal, output } from '@angular/core';
 import {
   FormField,
-  type FieldTree,
   type SchemaPath,
   type TreeValidationResult,
   form,
   maxLength,
+  required,
   requiredError,
   submit,
   validate,
 } from '@angular/forms/signals';
 import { RouterLink } from '@angular/router';
+import { InputField, TextareaField } from '@ui';
 import { cardNumberError } from './card-number';
 import {
   BARCODE_TYPE_OPTIONS,
@@ -18,20 +19,16 @@ import {
   EMPTY_CARD_FORM,
   type FormProblem,
 } from './card-form.model';
-import { FieldErrors } from './field-errors';
 
-function notBlank(path: SchemaPath<string>, label: string): void {
+/** Required, and not just whitespace, like the API's `@NotBlank`. */
+function requiredText(path: SchemaPath<string>, label: string): void {
+  const message = `${label} is required`;
+  required(path, { message });
   validate(path, ({ value }) =>
-    value().trim() === ''
-      ? requiredError({ message: `${label} is required` })
+    value() !== '' && value().trim() === ''
+      ? requiredError({ message })
       : undefined,
   );
-}
-
-function atMost(path: SchemaPath<string>, max: number, label: string): void {
-  maxLength(path, max, {
-    message: `${label} can have at most ${max} characters`,
-  });
 }
 
 function formField(name: string | undefined): keyof CardFormValue | undefined {
@@ -47,7 +44,7 @@ function formField(name: string | undefined): keyof CardFormValue | undefined {
  */
 @Component({
   selector: 'app-card-form',
-  imports: [FieldErrors, FormField, RouterLink],
+  imports: [FormField, InputField, RouterLink, TextareaField],
   template: `
     <form novalidate (submit)="submit($event)">
       @if (form().errors().length) {
@@ -63,37 +60,9 @@ function formField(name: string | undefined): keyof CardFormValue | undefined {
         </div>
       }
 
-      <label>
-        Name
-        <input
-          type="text"
-          aria-required="true"
-          [formField]="form.name"
-          [attr.aria-invalid]="invalidMark(form.name)"
-          [attr.aria-describedby]="
-            showsErrors(form.name) ? 'name-errors' : null
-          "
-        />
-      </label>
-      @if (showsErrors(form.name)) {
-        <app-field-errors id="name-errors" [errors]="form.name().errors()" />
-      }
+      <app-input-field label="Name" [field]="form.name" />
 
-      <label>
-        Store
-        <input
-          type="text"
-          aria-required="true"
-          [formField]="form.store"
-          [attr.aria-invalid]="invalidMark(form.store)"
-          [attr.aria-describedby]="
-            showsErrors(form.store) ? 'store-errors' : null
-          "
-        />
-      </label>
-      @if (showsErrors(form.store)) {
-        <app-field-errors id="store-errors" [errors]="form.store().errors()" />
-      }
+      <app-input-field label="Store" [field]="form.store" />
 
       <label>
         Barcode type
@@ -104,53 +73,14 @@ function formField(name: string | undefined): keyof CardFormValue | undefined {
         </select>
       </label>
 
-      <label>
-        Card number
-        <input
-          type="text"
-          aria-required="true"
-          [formField]="form.cardNumber"
-          [attr.aria-invalid]="invalidMark(form.cardNumber)"
-          [attr.aria-describedby]="
-            showsErrors(form.cardNumber) ? 'cardNumber-errors' : null
-          "
-        />
-      </label>
-      @if (showsErrors(form.cardNumber)) {
-        <app-field-errors
-          id="cardNumber-errors"
-          [errors]="form.cardNumber().errors()"
-        />
-      }
+      <app-input-field label="Card number" [field]="form.cardNumber" />
 
-      <label>
-        Colour (optional, for example #ff8800)
-        <input
-          type="text"
-          [formField]="form.color"
-          [attr.aria-invalid]="invalidMark(form.color)"
-          [attr.aria-describedby]="
-            showsErrors(form.color) ? 'color-errors' : null
-          "
-        />
-      </label>
-      @if (showsErrors(form.color)) {
-        <app-field-errors id="color-errors" [errors]="form.color().errors()" />
-      }
+      <app-input-field
+        label="Colour (optional, for example #ff8800)"
+        [field]="form.color"
+      />
 
-      <label>
-        Note (optional)
-        <textarea
-          [formField]="form.note"
-          [attr.aria-invalid]="invalidMark(form.note)"
-          [attr.aria-describedby]="
-            showsErrors(form.note) ? 'note-errors' : null
-          "
-        ></textarea>
-      </label>
-      @if (showsErrors(form.note)) {
-        <app-field-errors id="note-errors" [errors]="form.note().errors()" />
-      }
+      <app-textarea-field label="Note (optional)" [field]="form.note" />
 
       <div class="actions">
         <button type="submit" [disabled]="form().submitting()">Save</button>
@@ -185,29 +115,30 @@ export class CardForm {
   private readonly model = linkedSignal<CardFormValue>(() => this.value());
 
   protected readonly form = form(this.model, (path) => {
-    notBlank(path.name, 'Name');
-    atMost(path.name, 100, 'Name');
-    notBlank(path.store, 'Store');
-    atMost(path.store, 100, 'Store');
-    notBlank(path.cardNumber, 'Card number');
-    atMost(path.cardNumber, 100, 'Card number');
-    atMost(path.color, 32, 'Colour');
-    atMost(path.note, 1000, 'Note');
+    requiredText(path.name, 'Name');
+    maxLength(path.name, 100, {
+      message: 'Name can have at most 100 characters',
+    });
+    requiredText(path.store, 'Store');
+    maxLength(path.store, 100, {
+      message: 'Store can have at most 100 characters',
+    });
+    requiredText(path.cardNumber, 'Card number');
+    maxLength(path.cardNumber, 100, {
+      message: 'Card number can have at most 100 characters',
+    });
+    maxLength(path.color, 32, {
+      message: 'Colour can have at most 32 characters',
+    });
+    maxLength(path.note, 1000, {
+      message: 'Note can have at most 1000 characters',
+    });
     // Reads the type too, so changing the type re-checks the number.
     validate(path.cardNumber, ({ value, valueOf }) => {
       const message = cardNumberError(valueOf(path.barcodeType), value());
       return message ? { kind: 'cardNumber', message } : undefined;
     });
   });
-
-  /** `true` while errors show; absent otherwise, so Pico does not draw a "valid" tick. */
-  protected invalidMark(field: FieldTree<string>): true | null {
-    return this.showsErrors(field) ? true : null;
-  }
-
-  protected showsErrors(field: FieldTree<string>): boolean {
-    return field().touched() && field().invalid();
-  }
 
   protected submit(event: Event): void {
     event.preventDefault();

@@ -123,8 +123,9 @@ describe('CardFormPage', () => {
       expect(el.textContent).toContain('Name is required');
       expect(el.textContent).toContain('Store is required');
       expect(input('Name').getAttribute('aria-invalid')).toBe('true');
-      expect(input('Name').getAttribute('aria-describedby')).toBe(
-        'name-errors',
+      const errorId = input('Name').getAttribute('aria-describedby');
+      expect(el.querySelector(`#${errorId}`)?.textContent).toContain(
+        'Name is required',
       );
       http.expectNone('/api/cards');
     });
