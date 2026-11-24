@@ -1,6 +1,6 @@
 /* Design tokens. Component CSS must use these (enforced by stylelint, see
-   stylelint.config.mjs); raw spacing and font sizes belong only here, raw
-   colours only in palette.css. */
+   stylelint.config.mjs); raw spacing and font sizes belong only here. Colours
+   are never written by hand: they come from Pico's --pico-* variables. */
 :root {
   /* Typography: every size derives from the base. */
   --font-size-base: 1rem;
@@ -12,16 +12,15 @@
   --space-3: 0.75rem;
   --space-4: 1rem;
 
-  /* Colors */
-  --color-surface: var(--palette-white);
-  --color-danger: var(--palette-red-700);
-  --color-on-danger-surface: var(--palette-red-950);
-  --color-shadow: color-mix(in srgb, var(--palette-black) 20%, transparent);
+  /* Colors: Pico's semantic variables, which also switch with light/dark mode. */
+  --color-surface: var(--pico-card-background-color);
+  --color-danger: var(--pico-form-element-invalid-active-border-color);
+  --color-on-danger-surface: var(--pico-del-color);
 
   /* Shape and elevation */
   --border-width: 1px;
   --radius-sm: 0.25rem;
-  --shadow-md: 0 2px 8px var(--color-shadow);
+  --shadow-md: var(--pico-card-box-shadow);
 
   /* Sizes */
   --size-notification-max: 28rem;
