@@ -2,9 +2,13 @@ package com.ccards.api.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -58,6 +62,24 @@ class CardServiceTests {
 		when(repository.findAll(pageable)).thenReturn(page);
 
 		assertThat(service.list(pageable)).isSameAs(page);
+	}
+
+	@Test
+	void recordUseCountsOneUseOfAKnownCard() {
+		UUID id = UUID.randomUUID();
+		when(repository.recordUse(eq(id), any(Instant.class))).thenReturn(1);
+
+		service.recordUse(id);
+
+		verify(repository).recordUse(eq(id), any(Instant.class));
+	}
+
+	@Test
+	void recordUseThrowsForUnknownId() {
+		UUID id = UUID.randomUUID();
+		when(repository.recordUse(eq(id), any(Instant.class))).thenReturn(0);
+
+		assertThatThrownBy(() -> service.recordUse(id)).isInstanceOf(CardNotFoundException.class);
 	}
 
 }

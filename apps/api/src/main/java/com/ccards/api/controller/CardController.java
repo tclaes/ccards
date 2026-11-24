@@ -110,6 +110,12 @@ public class CardController implements CardsApi {
 	}
 
 	@Override
+	public ResponseEntity<Void> registerCardUsage(UUID id) {
+		service.recordUse(id);
+		return ResponseEntity.noContent().build();
+	}
+
+	@Override
 	public ResponseEntity<Void> deleteCard(UUID id) {
 		service.delete(id);
 		return ResponseEntity.noContent().build();

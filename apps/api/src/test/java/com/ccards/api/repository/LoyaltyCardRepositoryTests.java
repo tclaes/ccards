@@ -187,4 +187,65 @@ class LoyaltyCardRepositoryTests {
 			.isInstanceOf(ObjectOptimisticLockingFailureException.class);
 	}
 
+	@Test
+	void newCardStartsWithoutUsage() {
+		UUID id = repository.saveAndFlush(newCard(BarcodeType.EAN_13, OWNER)).getId();
+		flushAndClear();
+
+		LoyaltyCard loaded = repository.findById(id).orElseThrow();
+
+		assertThat(loaded.getUsageCount()).isZero();
+		assertThat(loaded.getLastUsedAt()).isNull();
+	}
+
+	@Test
+	void recordUseCountsAndSetsTheLastUsedTime() {
+		UUID id = repository.saveAndFlush(newCard(BarcodeType.EAN_13, OWNER)).getId();
+		flushAndClear();
+		Instant before = Instant.now();
+
+		assertThat(repository.recordUse(id, Instant.now())).isEqualTo(1);
+		assertThat(repository.recordUse(id, Instant.now())).isEqualTo(1);
+		flushAndClear();
+
+		LoyaltyCard loaded = repository.findById(id).orElseThrow();
+		assertThat(loaded.getUsageCount()).isEqualTo(2);
+		assertThat(loaded.getLastUsedAt()).isBetween(before.minusSeconds(1), Instant.now().plusSeconds(1));
+	}
+
+	@Test
+	void recordUseOfAnUnknownCardChangesNothing() {
+		assertThat(repository.recordUse(UUID.randomUUID(), Instant.now())).isZero();
+	}
+
+	@Test
+	void recordUseIsNotAnEdit() {
+		UUID id = repository.saveAndFlush(newCard(BarcodeType.EAN_13, OWNER)).getId();
+		flushAndClear();
+		LoyaltyCard before = repository.findById(id).orElseThrow();
+		Long version = before.getVersion();
+		Instant updatedAt = before.getUpdatedAt();
+
+		repository.recordUse(id, Instant.now());
+		flushAndClear();
+
+		LoyaltyCard after = repository.findById(id).orElseThrow();
+		assertThat(after.getVersion()).isEqualTo(version);
+		assertThat(after.getUpdatedAt()).isEqualTo(updatedAt);
+	}
+
+	@Test
+	void editingACardDoesNotWriteBackAStaleUsageCount() {
+		UUID id = repository.saveAndFlush(newCard(BarcodeType.EAN_13, OWNER)).getId();
+		flushAndClear();
+		LoyaltyCard stale = repository.findById(id).orElseThrow(); // loaded while the count was 0
+		repository.recordUse(id, Instant.now());
+
+		stale.setName("Renamed");
+		repository.saveAndFlush(stale);
+		flushAndClear();
+
+		assertThat(repository.findById(id).orElseThrow().getUsageCount()).isEqualTo(1);
+	}
+
 }

@@ -54,7 +54,7 @@ class FlywayMigrationTests {
 		List<Map<String, Object>> history = jdbc.queryForList(
 			"select version, success from flyway_schema_history where version is not null order by installed_rank");
 
-		assertThat(history).extracting(row -> row.get("version")).containsExactly("1", "2", "3");
+		assertThat(history).extracting(row -> row.get("version")).containsExactly("1", "2", "3", "4");
 		assertThat(history).allSatisfy(row -> assertThat(row).containsEntry("success", true));
 	}
 

@@ -67,6 +67,9 @@ describe('CheckoutPage', () => {
 
   afterEach(() => Reflect.deleteProperty(navigator, 'wakeLock'));
 
+  const usageRequests = () =>
+    http.match((r) => r.url.endsWith('/api/cards/abc/usage'));
+
   const pendingRequest = () =>
     http.expectOne((r) => r.url.endsWith('/api/cards/abc'));
 
@@ -130,5 +133,47 @@ describe('CheckoutPage', () => {
     pendingRequest().flush(CARD);
     await settle();
     expect(el.querySelector('app-checkout-barcode')).not.toBeNull();
+  });
+
+  it('registers one use of the card when it is opened', () => {
+    const uses = usageRequests();
+    expect(uses).toHaveLength(1);
+    expect(uses[0].request.method).toBe('POST');
+    pendingRequest();
+  });
+
+  it('does not register another use when a failed load is retried', async () => {
+    usageRequests()[0].flush(null, { status: 204, statusText: 'No Content' });
+    pendingRequest().flush(
+      { title: 'Server error', status: 500 },
+      { status: 500, statusText: 'Server Error' },
+    );
+    await settle();
+
+    el.querySelector('button')?.click();
+    await settle();
+    pendingRequest().flush(CARD);
+    await settle();
+
+    expect(usageRequests()).toHaveLength(0);
+  });
+
+  it('keeps the page undisturbed and logs when registering the use fails', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    usageRequests()[0].flush(
+      { title: 'Server error', status: 500 },
+      { status: 500, statusText: 'Server Error' },
+    );
+    pendingRequest().flush(CARD);
+    await settle();
+
+    expect(warn).toHaveBeenCalledWith(
+      'Could not register the use of the card',
+      expect.anything(),
+    );
+    expect(el.querySelector('app-checkout-barcode')).not.toBeNull();
+    expect(el.querySelector('[role="alert"]')).toBeNull();
+    expect(TestBed.inject(NotificationService).notifications()).toEqual([]);
+    warn.mockRestore();
   });
 });

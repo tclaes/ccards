@@ -2,8 +2,14 @@ package com.ccards.api.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -170,6 +176,72 @@ class CardApiTests {
 		client.delete().uri("/api/cards/{id}", id).exchange().expectStatus().isNoContent();
 		assertThat(rows(id)).isZero();
 		client.delete().uri("/api/cards/{id}", id).exchange().expectStatus().isNotFound();
+	}
+
+	private ResponseSpec use(String id) {
+		return client.post().uri("/api/cards/{id}/usage", id).exchange();
+	}
+
+	private Long usageCount(String id) {
+		return jdbc.queryForObject("select usage_count from loyalty_card where id = ?", Long.class, UUID.fromString(id));
+	}
+
+	@Test
+	void everyUseIsCountedAndTheLastUsedTimeIsSet() {
+		String id = createGroceries();
+		assertThat(usageCount(id)).isZero();
+
+		for (int i = 0; i < 3; i++) {
+			use(id).expectStatus().isNoContent();
+		}
+
+		assertThat(usageCount(id)).isEqualTo(3);
+		assertThat(jdbc.queryForObject("select last_used_at from loyalty_card where id = ?", Object.class,
+				UUID.fromString(id))).isNotNull();
+	}
+
+	@Test
+	void usageOfUnknownCardIs404AndOfABadIdIs400() {
+		use(UUID.randomUUID().toString()).expectStatus().isNotFound()
+			.expectHeader().contentType(MediaType.APPLICATION_PROBLEM_JSON);
+		use("not-a-uuid").expectStatus().isBadRequest();
+	}
+
+	@Test
+	void usageDoesNotChangeTheVersionAndAnOpenEditFormStillSaves() {
+		String id = createGroceries();
+
+		use(id).expectStatus().isNoContent();
+
+		client.get().uri("/api/cards/{id}", id).exchange().expectStatus().isOk()
+			.expectBody().jsonPath("$.version").isEqualTo(0);
+		patch(id, """
+				{"version":0,"name":"Edited after use"}""").expectStatus().isOk();
+		assertThat(usageCount(id)).isEqualTo(1);
+	}
+
+	@Test
+	void concurrentUsesAreAllCounted() throws Exception {
+		String id = createGroceries();
+		int uses = 20;
+
+		try (ExecutorService pool = Executors.newFixedThreadPool(uses)) {
+			CountDownLatch start = new CountDownLatch(1);
+			List<Future<?>> calls = new ArrayList<>();
+			for (int i = 0; i < uses; i++) {
+				calls.add(pool.submit(() -> {
+					start.await();
+					use(id).expectStatus().isNoContent();
+					return null;
+				}));
+			}
+			start.countDown();
+			for (Future<?> call : calls) {
+				call.get();
+			}
+		}
+
+		assertThat(usageCount(id)).isEqualTo(uses);
 	}
 
 }

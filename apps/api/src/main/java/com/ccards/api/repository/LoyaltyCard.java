@@ -60,6 +60,17 @@ public class LoyaltyCard {
 	@Column(nullable = false)
 	private Instant updatedAt;
 
+	/**
+	 * Read-only on purpose: only {@link LoyaltyCardRepository#recordUse} changes it, atomically in the database.
+	 * Hibernate writes every mapped column on update, so a writable mapping would put a stale count back when
+	 * a card is edited.
+	 */
+	@Column(nullable = false, insertable = false, updatable = false)
+	private long usageCount;
+
+	@Column(insertable = false, updatable = false)
+	private Instant lastUsedAt;
+
 	protected LoyaltyCard() {
 		// for JPA
 	}
@@ -105,5 +116,9 @@ public class LoyaltyCard {
 	public Instant getCreatedAt() { return createdAt; }
 
 	public Instant getUpdatedAt() { return updatedAt; }
+
+	public long getUsageCount() { return usageCount; }
+
+	public Instant getLastUsedAt() { return lastUsedAt; }
 
 }
