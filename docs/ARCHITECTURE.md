@@ -59,6 +59,8 @@ When unsure, ask: "could I use this component on another screen with different d
 - Every component in `ui/` is dumb. The public surface is `ui/index.ts`; import from there (`from '../../ui'`), never from a component file.
 - Build a `ui/` component when a second place needs it (YAGNI); until then keep it in its feature.
 - Styling uses the design tokens in `src/tokens.css`; stylelint enforces tokens and alphabetical property order.
+- Colour values are written only in `src/palette.css` (`--palette-*`); `tokens.css` derives its colour tokens from them and stylelint rejects hex, named and `rgb()`-style colours everywhere else.
+- Web Awesome (`@awesome.me/webawesome`) provides the theme, loaded once in `styles.css`. Web Awesome colour variables are set from palette entries in `src/web-awesome.css`. A component is imported per component (`@awesome.me/webawesome/dist/components/<name>/<name>.js`) by the `ui/` component that uses it, which declares `CUSTOM_ELEMENTS_SCHEMA` and stays dumb (inputs and outputs only). Keep our own `ui/` component unless the Web Awesome one is simpler and passes the same tests.
 - Wrap native elements by attribute selector (`button[appButton]`) so native semantics and accessibility are kept.
 
 ### Other frontend rules

@@ -1,0 +1,8 @@
+/* Web Awesome colour variables the app uses, set from palette entries so Web
+   Awesome components and our own components show the same colours. Unlayered,
+   so it wins over the theme's `wa-theme` layer. */
+:root {
+  --wa-color-surface-default: var(--palette-white);
+  --wa-color-danger-fill-loud: var(--palette-red-700);
+  --wa-color-danger-on-loud: var(--palette-white);
+}

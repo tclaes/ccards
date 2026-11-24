@@ -1,5 +1,6 @@
 /* Design tokens. Component CSS must use these (enforced by stylelint, see
-   stylelint.config.mjs); raw colors, spacing and font sizes belong only here. */
+   stylelint.config.mjs); raw spacing and font sizes belong only here, raw
+   colours only in palette.css. */
 :root {
   /* Typography: every size derives from the base. */
   --font-size-base: 1rem;
@@ -12,10 +13,10 @@
   --space-4: 1rem;
 
   /* Colors */
-  --color-surface: #fff;
-  --color-danger: #b00020;
-  --color-on-danger-surface: #5c0011;
-  --color-shadow: rgb(0 0 0 / 0.2);
+  --color-surface: var(--palette-white);
+  --color-danger: var(--palette-red-700);
+  --color-on-danger-surface: var(--palette-red-950);
+  --color-shadow: color-mix(in srgb, var(--palette-black) 20%, transparent);
 
   /* Shape and elevation */
   --border-width: 1px;

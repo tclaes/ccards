@@ -1,0 +1,8 @@
+/* The only file where colour values may be written (enforced by stylelint, see
+   stylelint.config.mjs). tokens.css and component CSS reference these entries. */
+:root {
+  --palette-white: #fff;
+  --palette-black: #000;
+  --palette-red-700: #b00020;
+  --palette-red-950: #5c0011;
+}

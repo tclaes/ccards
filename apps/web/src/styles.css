@@ -1,3 +1,6 @@
+@import '@awesome.me/webawesome/dist/styles/themes/default.css';
+@import './palette.css';
 @import './tokens.css';
+@import './web-awesome.css';
 
 /* You can add global styles to this file, and also import other style files */

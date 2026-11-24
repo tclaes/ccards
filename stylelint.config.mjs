@@ -23,6 +23,12 @@ export default {
   rules: {
     // CSS properties are written in alphabetical order.
     'order/properties-alphabetical-order': true,
+    // Colour values live only in palette.css (see overrides).
+    'color-no-hex': true,
+    'color-named': 'never',
+    'function-disallowed-list': [
+      ['rgb', 'rgba', 'hsl', 'hsla', 'hwb', 'lab', 'lch', 'oklab', 'oklch'],
+    ],
     'scale-unlimited/declaration-strict-value': [
       tokenProperties,
       {
@@ -46,6 +52,14 @@ export default {
     ],
   },
   overrides: [
+    {
+      files: ['**/palette.css'],
+      rules: {
+        'color-no-hex': null,
+        'color-named': null,
+        'function-disallowed-list': null,
+      },
+    },
     {
       // The only place raw values are allowed: where tokens are defined.
       files: ['**/tokens.css'],

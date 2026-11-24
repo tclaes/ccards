@@ -32,3 +32,11 @@
 - Web Awesome variable names and file paths vary by version; pin the version and verify against its docs while implementing.
 - Mapping Web Awesome variables onto our palette adds a small mapping block to maintain; accepted for the single source of truth.
 - If CC-11 merges first, `tokens.css` gains colour literals that this change must migrate; if this change merges first, CC-11 needs a rebase onto palette entries.
+
+## Assessment outcome (task 3.1)
+
+- **`Button` (kept):** a thin `button[appButton]` attribute directive over the native button; `wa-button` would need a wrapper component plus shadow DOM styling for the same result, so there is no gain.
+- **`Toast` (kept):** its behaviour (`role="alert"`, hover/focus pause and resume outputs, Popover-API stacking in the host) is not covered by a Web Awesome callout; replacing it would need more wrapper logic than the current component.
+- **`StateMessage` (CC-11):** not on this branch yet; assess it when CC-11 is merged.
+
+CC-11 (task 3.2): its tile colour tokens are not in this branch, so this change merges first and CC-11 must define `--color-tile-*` from `--palette-*` entries instead of hex values (noted in the PR).
