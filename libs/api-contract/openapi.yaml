@@ -181,6 +181,12 @@ paths:
             type: string
             enum: [png, svg]
             default: png
+        - name: If-None-Match
+          in: header
+          required: false
+          description: The `ETag` of a copy the client already has; a match gets 304 without the image
+          schema:
+            type: string
       responses:
         '200':
           description: The barcode image

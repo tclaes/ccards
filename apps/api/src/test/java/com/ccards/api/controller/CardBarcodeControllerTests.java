@@ -91,6 +91,18 @@ class CardBarcodeControllerTests {
 	}
 
 	@Test
+	void answers304ForWeakTagsAndTagListsToo() throws Exception {
+		when(service.get(id)).thenReturn(cardWithVersion(3));
+
+		mvc.perform(get("/api/cards/{id}/barcode", id).header(HttpHeaders.IF_NONE_MATCH, "\"1-png\", W/\"3-png\""))
+			.andExpect(status().isNotModified());
+		mvc.perform(get("/api/cards/{id}/barcode", id).header(HttpHeaders.IF_NONE_MATCH, "*"))
+			.andExpect(status().isNotModified());
+
+		verify(barcodes, never()).render(any(), any());
+	}
+
+	@Test
 	void anOldEtagGetsTheNewImageAndANewEtag() throws Exception {
 		LoyaltyCard card = cardWithVersion(4);
 		when(service.get(id)).thenReturn(card);

@@ -40,6 +40,10 @@ public class BarcodeService {
 	private static BitMatrix encode(LoyaltyCard card) {
 		// The enum constants share their names with ZXing's formats.
 		BarcodeFormat format = BarcodeFormat.valueOf(card.getBarcodeType().name());
+		if (format == BarcodeFormat.CODE_128 && usesCode128FunctionCodes(card.getCardNumber())) {
+			throw new BarcodeNotRenderableException(card.getId(),
+					new IllegalArgumentException("Code 128 reads U+00F1 to U+00F4 as function codes"));
+		}
 		boolean qr = format == BarcodeFormat.QR_CODE;
 		int height = qr ? 0 : BAR_HEIGHT;
 		// ZXing's QR default is ISO-8859-1, which turns other characters into '?' without an error.
@@ -51,6 +55,14 @@ public class BarcodeService {
 		catch (WriterException | IllegalArgumentException ex) {
 			throw new BarcodeNotRenderableException(card.getId(), ex);
 		}
+	}
+
+	/**
+	 * ZXing's Code 128 writer turns U+00F1 to U+00F4 into FNC1 to FNC4 instead of drawing the
+	 * character, so a scan would silently return a different number.
+	 */
+	private static boolean usesCode128FunctionCodes(String number) {
+		return number.chars().anyMatch(c -> c >= '\u00f1' && c <= '\u00f4');
 	}
 
 	private static byte[] toPng(BitMatrix matrix) {

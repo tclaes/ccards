@@ -88,6 +88,14 @@ class BarcodeServiceTests {
 	}
 
 	@Test
+	void code128CharactersThatZxingReadsAsFunctionCodesAreNotRenderable() {
+		LoyaltyCard card = card(BarcodeType.CODE_128, "A\u00f1o");
+
+		assertThatThrownBy(() -> service.render(card, ImageFormat.PNG))
+			.isInstanceOf(BarcodeNotRenderableException.class);
+	}
+
+	@Test
 	void parsesTheFormatParameterIgnoringCase() {
 		assertThat(ImageFormat.fromParameter("png")).isEqualTo(ImageFormat.PNG);
 		assertThat(ImageFormat.fromParameter("SVG")).isEqualTo(ImageFormat.SVG);
