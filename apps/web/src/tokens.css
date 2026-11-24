@@ -28,6 +28,7 @@
   --shadow-md: var(--pico-card-box-shadow);
 
   /* Sizes */
+  --size-barcode-max: 40rem;
   --size-notification-max: 28rem;
   --size-tile-height: 6rem;
   --size-tile-min: 10rem;

@@ -39,8 +39,8 @@ const PAGE_SIZE = 100;
             @for (card of items(); track card.id) {
               <li>
                 <a
-                  [routerLink]="['/cards', card.id, 'edit']"
-                  [attr.aria-label]="'Edit ' + card.name"
+                  [routerLink]="['/cards', card.id]"
+                  [attr.aria-label]="'Open ' + card.name"
                 >
                   <app-card-tile
                     [name]="card.name"
@@ -48,6 +48,12 @@ const PAGE_SIZE = 100;
                     [color]="card.color"
                   />
                 </a>
+                <a
+                  class="edit"
+                  [routerLink]="['/cards', card.id, 'edit']"
+                  [attr.aria-label]="'Edit ' + card.name"
+                  >Edit</a
+                >
               </li>
             }
           </ul>

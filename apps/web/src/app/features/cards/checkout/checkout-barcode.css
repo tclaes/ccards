@@ -1,0 +1,26 @@
+:host {
+  /* Re-resolved here, inside the light scheme (see checkout-barcode.ts). */
+  --color-barcode-frame: var(--pico-background-color);
+  --color-on-barcode-frame: var(--pico-color);
+  background-color: var(--color-barcode-frame);
+  border-radius: var(--radius-sm);
+  box-sizing: border-box;
+  color: var(--color-on-barcode-frame);
+  display: block;
+  inline-size: 100%;
+  max-inline-size: var(--size-barcode-max);
+  padding: var(--space-4);
+  text-align: center;
+}
+
+img {
+  display: block;
+  inline-size: 100%;
+}
+
+.number {
+  font-size: var(--font-size-lg);
+  letter-spacing: 0.05em;
+  margin: var(--space-4) 0 0;
+  word-break: break-all;
+}

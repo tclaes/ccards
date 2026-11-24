@@ -90,16 +90,19 @@ describe('CardsPage', () => {
     expect(el.querySelector('[role="status"]')).toBeNull();
   });
 
-  it('links to the add form and to the edit form of each card', async () => {
+  it('links to the add form, and per card to its checkout and its edit form', async () => {
     pendingRequest().flush(page([card('Clubkaart', 'Delhaize')]));
     await settle();
 
     expect(el.querySelector('a[href="/cards/new"]')?.textContent).toContain(
       'Add card',
     );
-    expect(el.querySelector('.grid a')?.getAttribute('href')).toBe(
-      '/cards/Clubkaart/edit',
-    );
+    expect(
+      el.querySelector('a[aria-label="Open Clubkaart"]')?.getAttribute('href'),
+    ).toBe('/cards/Clubkaart');
+    expect(
+      el.querySelector('a[aria-label="Edit Clubkaart"]')?.getAttribute('href'),
+    ).toBe('/cards/Clubkaart/edit');
   });
 
   it('shows the empty state when there are no cards', async () => {

@@ -22,3 +22,7 @@
   display: block;
   text-decoration: none;
 }
+
+.grid .edit {
+  margin-block-start: var(--space-1);
+}
