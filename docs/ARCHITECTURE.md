@@ -57,7 +57,7 @@ When unsure, ask: "could I use this component on another screen with different d
 
 ### The UI library (`ui/`)
 
-- Every component in `ui/` is dumb. The public surface is `ui/index.ts`; import from there with the `@ui` path alias (`from '@ui'`, set in `tsconfig.base.json`), never with a relative path and never from a component file.
+- Every component in `ui/` is dumb. The public surface is `ui/index.ts`; import from there with the `@ui` path alias (`from '@ui'`, set in `apps/web/tsconfig.json`), never with a relative path and never from a component file.
 - Build a `ui/` component when a second place needs it (YAGNI); until then keep it in its feature.
 - Styling uses the design tokens in `src/tokens.css`; stylelint enforces tokens and alphabetical property order.
 - Pico CSS (`@picocss/pico`, `pico.css`) is loaded once in `styles.css` and styles native elements. Colours are never written by hand: `tokens.css` maps the colour tokens onto Pico's `--pico-*` variables, and stylelint rejects hex, named and `rgb()`-style colours in every CSS file. Where Pico's styling of a native element gets in the way of a `ui/` component, reset it in that component's CSS.

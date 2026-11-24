@@ -12,8 +12,7 @@
     "lib": ["es2022", "dom"],
     "skipLibCheck": true,
     "paths": {
-      "@ccards/api-client": ["./libs/api-client/src/index.ts"],
-      "@ui": ["./apps/web/src/app/ui/index.ts"]
+      "@ccards/api-client": ["./libs/api-client/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

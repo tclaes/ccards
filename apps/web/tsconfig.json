@@ -8,7 +8,11 @@
     "noFallthroughCasesInSwitch": true,
     "isolatedModules": true,
     "emitDecoratorMetadata": false,
-    "module": "preserve"
+    "module": "preserve",
+    "paths": {
+      "@ccards/api-client": ["../../libs/api-client/src/index.ts"],
+      "@ui": ["./src/app/ui/index.ts"]
+    }
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,
