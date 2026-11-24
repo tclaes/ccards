@@ -11,3 +11,9 @@
   margin: 0;
   padding: 0;
 }
+
+/* Pico styles `ul li` with a marker; the grid has none. */
+.grid > li {
+  list-style: none;
+  padding: 0;
+}

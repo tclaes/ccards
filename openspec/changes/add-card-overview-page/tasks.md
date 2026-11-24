@@ -17,4 +17,6 @@
 
 ## 4. Check
 
-- [ ] 4.1 Run `npx nx affected -t lint test build`, then open the page against the local stack (`docker`/API) and check the loading, empty, error and card states in the browser
+- [x] 4.1 Run `npx nx affected -t lint test build`, then open the page against the local stack (`docker`/API) and check the loading, empty, error and card states in the browser
+
+- [x] 4.2 Found while checking in the browser: the dev server could not reach the API (cross-origin, no CORS). Serve `/api` through a dev proxy (`apps/web/proxy.conf.json`) and point the generated client at the same origin with `provideApi('')`

@@ -10,6 +10,8 @@ import { tileColors } from './tile-colors';
   `,
   styleUrl: './card-tile.css',
   host: {
+    // Pico's light scheme inside the tile, so the dark text token stays dark in dark mode.
+    'data-theme': 'light',
     '[style.background-color]': 'colors().background',
     '[style.color]': 'colors().text',
   },

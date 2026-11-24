@@ -16,6 +16,9 @@
   --color-surface: var(--pico-card-background-color);
   --color-danger: var(--pico-form-element-invalid-active-border-color);
   --color-on-danger-surface: var(--pico-del-color);
+  --color-tile-default: var(--pico-secondary-background);
+  --color-tile-text-light: var(--pico-primary-inverse);
+  --color-tile-text-dark: var(--pico-color);
 
   /* Shape and elevation */
   --border-width: 1px;
@@ -24,4 +27,6 @@
 
   /* Sizes */
   --size-notification-max: 28rem;
+  --size-tile-height: 6rem;
+  --size-tile-min: 10rem;
 }
