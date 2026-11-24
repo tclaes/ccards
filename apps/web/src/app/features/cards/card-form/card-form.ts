@@ -1,6 +1,5 @@
 import { Component, input, linkedSignal, output } from '@angular/core';
 import {
-  FormField,
   type TreeValidationResult,
   form,
   maxLength,
@@ -9,7 +8,7 @@ import {
 } from '@angular/forms/signals';
 import { RouterLink } from '@angular/router';
 import { requiredText } from '@shared/utils/form/required-text';
-import { InputField, TextareaField } from '@ui';
+import { InputField, SelectField, TextareaField } from '@ui';
 import { cardNumberError } from './card-number';
 import {
   BARCODE_TYPE_OPTIONS,
@@ -31,7 +30,7 @@ function formField(name: string | undefined): keyof CardFormValue | undefined {
  */
 @Component({
   selector: 'app-card-form',
-  imports: [FormField, InputField, RouterLink, TextareaField],
+  imports: [InputField, RouterLink, SelectField, TextareaField],
   template: `
     <form novalidate (submit)="submit($event)">
       @if (form().errors().length) {
@@ -51,14 +50,11 @@ function formField(name: string | undefined): keyof CardFormValue | undefined {
 
       <app-input-field label="Store" [field]="form.store" />
 
-      <label>
-        Barcode type
-        <select [formField]="form.barcodeType">
-          @for (option of barcodeTypes; track option.value) {
-            <option [value]="option.value">{{ option.label }}</option>
-          }
-        </select>
-      </label>
+      <app-select-field
+        label="Barcode type"
+        [field]="form.barcodeType"
+        [options]="barcodeTypes"
+      />
 
       <app-input-field label="Card number" [field]="form.cardNumber" />
 

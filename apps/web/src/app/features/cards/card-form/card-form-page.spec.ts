@@ -5,7 +5,13 @@ import {
 } from '@angular/common/http/testing';
 import { Component } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Router, provideRouter } from '@angular/router';
+import {
+  ActivatedRoute,
+  Router,
+  convertToParamMap,
+  provideRouter,
+} from '@angular/router';
+import { BehaviorSubject } from 'rxjs';
 import { BarcodeType, provideApi } from '@ccards/api-client';
 import type { Card } from '@ccards/api-client';
 import { errorInterceptor } from '../../../core/http/error.interceptor';
@@ -46,12 +52,21 @@ describe('CardFormPage', () => {
   let http: HttpTestingController;
   let el: HTMLElement;
   let navigate: ReturnType<typeof vi.spyOn>;
+  // The route's `:id`; the query string always carries an `id` too, which must be ignored.
+  const pathParams = new BehaviorSubject(convertToParamMap({}));
 
   beforeEach(() => {
     stubDialog();
     TestBed.configureTestingModule({
       providers: [
         provideRouter([{ path: 'cards', component: Overview }]),
+        {
+          provide: ActivatedRoute,
+          useValue: {
+            paramMap: pathParams,
+            queryParamMap: convertToParamMap({ id: 'from-query' }),
+          },
+        },
         provideHttpClient(withInterceptors([errorInterceptor])),
         provideHttpClientTesting(),
         // Same-origin, as in the app.
@@ -70,9 +85,9 @@ describe('CardFormPage', () => {
   }
 
   async function open(id?: string): Promise<void> {
+    pathParams.next(convertToParamMap(id ? { id } : {}));
     fixture = TestBed.createComponent(CardFormPage);
     el = fixture.nativeElement as HTMLElement;
-    if (id) fixture.componentRef.setInput('id', id);
     await settle();
   }
 
@@ -235,6 +250,41 @@ describe('CardFormPage', () => {
       expect(input('Name').value).toBe('Clubkaart');
     });
 
+    it('ignores an id in the query string and stays a create form', () => {
+      http.expectNone('/api/cards/from-query');
+      expect(el.querySelector('h1')?.textContent).toContain('Add card');
+    });
+
+    it('shows the global notification for a 400 without a body', async () => {
+      await fillValidCreate();
+      await submit();
+      request('POST').flush(null, { status: 400, statusText: 'Bad Request' });
+      await settle();
+
+      expect(toasts()).toHaveLength(1);
+    });
+
+    it('shows a server error for the barcode type at that field', async () => {
+      await fillValidCreate();
+      await submit();
+      request('POST').flush(
+        {
+          title: 'Bad request',
+          status: 400,
+          errors: [{ field: 'barcodeType', message: 'is not supported' }],
+        },
+        { status: 400, statusText: 'Bad Request' },
+      );
+      await settle();
+
+      const select = input('Barcode type');
+      expect(select.getAttribute('aria-invalid')).toBe('true');
+      expect(
+        el.querySelector(`#${select.getAttribute('aria-describedby')}`)
+          ?.textContent,
+      ).toContain('is not supported');
+    });
+
     it('has no delete action', () => {
       expect(el.textContent).not.toContain('Delete');
     });
@@ -353,6 +403,8 @@ describe('CardFormPage', () => {
         .find((b) => b.textContent?.includes('Reload'))!
         .click();
       await settle();
+      // Nothing can be typed while the reload is pending.
+      expect(el.querySelector('form')).toBeNull();
       http
         .expectOne('/api/cards/c1')
         .flush({ ...saved, name: 'Theirs', version: 4 });

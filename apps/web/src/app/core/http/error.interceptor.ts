@@ -59,8 +59,6 @@ function isProblem(body: unknown): body is Problem {
   );
 }
 
-export function isValidationProblem(
-  problem: Problem,
-): problem is ValidationProblem {
-  return Array.isArray((problem as ValidationProblem).errors);
+export function isValidationProblem(body: unknown): body is ValidationProblem {
+  return isProblem(body) && Array.isArray((body as ValidationProblem).errors);
 }

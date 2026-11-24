@@ -1,16 +1,10 @@
 import { HttpContext, HttpErrorResponse } from '@angular/common/http';
-import {
-  Component,
-  computed,
-  inject,
-  input,
-  resource,
-  signal,
-} from '@angular/core';
-import { Router } from '@angular/router';
+import { Component, computed, inject, resource, signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { ActivatedRoute, Router } from '@angular/router';
 import { CardsService } from '@ccards/api-client';
 import type { Card } from '@ccards/api-client';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, map } from 'rxjs';
 import {
   SKIP_ERROR_NOTIFICATION,
   describeHttpError,
@@ -78,8 +72,13 @@ export class CardFormPage {
   private readonly router = inject(Router);
   private readonly notifications = inject(NotificationService);
 
-  /** Route parameter; absent on `/cards/new`. */
-  readonly id = input<string>();
+  /**
+   * The `:id` path parameter; absent on `/cards/new`. Read from the route, not bound
+   * as an input, because input binding would also accept `?id=` from the query string.
+   */
+  private readonly id = toSignal(
+    inject(ActivatedRoute).paramMap.pipe(map((p) => p.get('id') ?? undefined)),
+  );
 
   protected readonly confirmingDelete = signal(false);
 
@@ -97,7 +96,8 @@ export class CardFormPage {
   protected readonly view = computed(() => {
     if (this.isNotFound()) return 'not-found';
     if (this.card.error()) return 'error';
-    if (this.id() && !this.card.hasValue()) return 'loading';
+    // Also while reloading, so nothing typed now is replaced when the reload ends.
+    if (this.id() && this.card.isLoading()) return 'loading';
     return 'form';
   });
 
