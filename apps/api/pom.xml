@@ -15,6 +15,7 @@
 	<description>ccards backend API</description>
 	<properties>
 		<java.version>21</java.version>
+		<mapstruct.version>1.6.3</mapstruct.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -93,6 +94,12 @@
 			<artifactId>testcontainers-junit-jupiter</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<!-- entity -> DTO mapping; the processor is configured on maven-compiler-plugin -->
+			<groupId>org.mapstruct</groupId>
+			<artifactId>mapstruct</artifactId>
+			<version>${mapstruct.version}</version>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -126,6 +133,10 @@
 							<apiPackage>com.ccards.api.generated.api</apiPackage>
 							<modelPackage>com.ccards.api.generated.model</modelPackage>
 							<generateSupportingFiles>false</generateSupportingFiles>
+							<!-- Merge patch must tell "absent" from null, which a DTO cannot; the controller gets the raw JSON tree. -->
+							<schemaMappings>
+								<schemaMapping>CardPatch=tools.jackson.databind.JsonNode</schemaMapping>
+							</schemaMappings>
 							<configOptions>
 								<interfaceOnly>true</interfaceOnly>
 								<skipDefaultInterface>true</skipDefaultInterface>
@@ -138,6 +149,19 @@
 						</configuration>
 					</execution>
 				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<annotationProcessorPaths>
+						<path>
+							<groupId>org.mapstruct</groupId>
+							<artifactId>mapstruct-processor</artifactId>
+							<version>${mapstruct.version}</version>
+						</path>
+					</annotationProcessorPaths>
+				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>

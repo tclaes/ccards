@@ -1,11 +1,14 @@
 package com.ccards.api.error;
 
+import com.ccards.api.service.CardNotFoundException;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Path;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
+import com.ccards.api.service.CardNotFoundException;
+import com.ccards.api.service.InvalidPatchException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.MessageSourceResolvable;
@@ -15,6 +18,7 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -78,6 +82,32 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 			.map(v -> new FieldViolation(leafName(v.getPropertyPath()), v.getMessage()))
 			.toList();
 		return validationProblem(ex, errors, new HttpHeaders(), request);
+	}
+
+	@ExceptionHandler(InvalidPatchException.class)
+	protected ResponseEntity<Object> handleInvalidPatch(InvalidPatchException ex, WebRequest request) {
+		List<FieldViolation> errors = ex.getViolations()
+			.entrySet()
+			.stream()
+			.map(e -> new FieldViolation(e.getKey(), e.getValue()))
+			.toList();
+		return validationProblem(ex, errors, new HttpHeaders(), request);
+	}
+
+	@ExceptionHandler(CardNotFoundException.class)
+	protected ResponseEntity<Object> handleCardNotFound(CardNotFoundException ex, WebRequest request) {
+		// Never echo ex.getMessage(): keep the response generic.
+		ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, "Card not found.");
+		return handleExceptionInternal(ex, problem, new HttpHeaders(), HttpStatus.NOT_FOUND, request);
+	}
+
+	@ExceptionHandler(ObjectOptimisticLockingFailureException.class)
+	protected ResponseEntity<Object> handleOptimisticLocking(ObjectOptimisticLockingFailureException ex,
+			WebRequest request) {
+		// Generic on purpose: the exception names the entity and its id.
+		ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT,
+				"The resource was changed by someone else. Reload it and try again.");
+		return handleExceptionInternal(ex, problem, new HttpHeaders(), HttpStatus.CONFLICT, request);
 	}
 
 	@ExceptionHandler(Exception.class)

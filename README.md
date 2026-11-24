@@ -114,7 +114,7 @@ Start the API against the stack with the Spring `local` profile:
 npx nx serve api --configuration=local
 ```
 
-With `local`, `/api/health` also reflects the database: it returns 503 `{"status":"DOWN"}` while PostgreSQL is unreachable. Without the profile (`npx nx serve api`, `npx nx test api`) no database or mail server is needed.
+With `local`, `/api/health` also reflects the database: it returns 503 `{"status":"DOWN"}` while PostgreSQL is unreachable. Without the profile (`npx nx serve api`, `npx nx test api`) no database or mail server is needed; the card endpoints are only registered when a datasource is configured, so without the profile `/api/cards` answers 404.
 
 ## Database migrations (Flyway)
 
@@ -136,6 +136,25 @@ The migration tests (`FlywayMigrationTests`) start a throwaway PostgreSQL with T
 - **Ownership is a plain `ownerId` UUID**, not a relation and not a foreign key: there is no users table yet (CC-16), and sharing (CC-29/CC-30) must not depend on a one-to-one owner link. Who may see a card is decided in the service layer.
 - `LoyaltyCardRepositoryTests` (`@DataJpaTest` + Testcontainers) run like the migration tests: skipped without Docker.
 
+## Card write API
+
+`POST /api/cards`, `PATCH /api/cards/{id}` and `DELETE /api/cards/{id}` (contract: `libs/api-contract/openapi.yaml`, code: `CardController` -> `CardService`).
+
+- **Create:** `201` with `Location` and the card, including its `id` and `version`. `ownerId` cannot be sent; until users exist (CC-16) every card gets the owner in `ccards.default-owner-id`.
+- **Update is a JSON Merge Patch** ([RFC 7396](https://www.rfc-editor.org/rfc/rfc7396)), sent as `application/merge-patch+json`: a field you leave out keeps its value, `null` clears `color` or `note`, and `version` (from your last read) is required. Unknown fields, a wrong type or a blank required field give `400`; plain `application/json` gives `415`.
+- **Concurrent edits:** the `version` must equal the stored one, otherwise `409` and nothing changes. A successful update returns the next version.
+- **Card number:** `EAN_13`, `EAN_8` and `UPC_A` need 13, 8 and 12 digits with a correct check digit; `CODE_128` and `QR_CODE` take any non-blank text (the rule is `@ValidCardNumber` in `com.ccards.api.service`). A patch is validated after merging, so changing only `barcodeType` re-checks the stored number.
+- **Needs a database:** the card beans are only created when `spring.datasource.url` is set (the `local` profile does), so the default profile still starts without a database and simply has no `/api/cards`.
+- **Delete:** `204`; an unknown id gives `404` (also for `PATCH`).
+
+```sh
+CARD_ID=$(curl -s -X POST localhost:8080/api/cards -H 'Content-Type: application/json' \
+  -d '{"name":"Groceries","store":"Delhaize","cardNumber":"4006381333931","barcodeType":"EAN_13"}' \
+  | python3 -c 'import json,sys; print(json.load(sys.stdin)["id"])')
+curl -i -X PATCH "localhost:8080/api/cards/${CARD_ID}" -H 'Content-Type: application/merge-patch+json' \
+  -d '{"version":0,"note":null,"name":"Renamed"}'
+```
+
 ## Continuous integration
 
 `.github/workflows/ci.yml` runs on every pull request and on every push to `main`. It installs Node (from `.nvmrc`) and Java 21, then runs lint, test and build for the **affected** projects only:
@@ -145,7 +164,7 @@ npx nx affected -t lint test build   # what CI runs
 npx nx run-many -t lint test build --all   # everything, regardless of changes
 ```
 
-Locally, `affected` compares against `main` by default. Changes to shared files (`package.json`, `nx.json`, `.nvmrc`, `.github/workflows/`, ...) affect every project. A change that touches no project (for example only `README.md`) passes without running any task. `api` has no lint target yet (Java lint is not set up); it is covered by test and build. The runner has Docker, so `FlywayMigrationTests` run in CI instead of being skipped.
+Locally, `affected` compares against `main` by default. Changes to shared files (`package.json`, `nx.json`, `.nvmrc`, `.github/workflows/`, ...) affect every project. A change that touches no project (for example only `README.md`) passes without running any task. `api` has no lint target yet (Java lint is not set up); it is covered by test and build. The runner has Docker, so `FlywayMigrationTests` run in CI instead of being skipped. Before the Nx run, CI downloads the OpenAPI generator JAR once (`npx openapi-generator-cli version`) and caches it keyed on `openapitools.json`, so parallel tasks never race on that download.
 
 The single job is named `CI`. That name is the required status check on `main`; do not rename it without updating the protection rule. Branch protection is a repository setting (needs admin rights) and was applied once with:
 
@@ -170,7 +189,8 @@ The `CI` check must have run at least once before it can be required. To remove 
 
 - **Backend:** `./mvnw` runs `openapi-generator-maven-plugin` (`spring`, `interfaceOnly`) into `apps/api/target/generated-sources/openapi`. Interfaces are in `com.ccards.api.generated.api`, DTOs in `com.ccards.api.generated.model`. A controller implements the generated interface, so a contract change that the code does not follow fails to compile. (`GET /api/health` is served by Actuator, so `HealthApi` has no implementer.)
 - **Frontend:** `libs/api-client` holds a `typescript-angular` client generated into `libs/api-client/src/generated/` (git-ignored). Import it as `@ccards/api-client`. `web` build/test/serve/lint run `api-client:codegen` first.
-- **Docs:** Swagger UI at http://localhost:8080/swagger-ui (any profile, no database), rendering the contract file.
+- **Docs:** Swagger UI at http://localhost:8080/swagger-ui, rendering the contract file.
+- **Cards:** `GET /api/cards?page=&size=` (page of cards ordered by name, `size` 1-100, default 20) and `GET /api/cards/{id}` (404 problem details for an unknown id). Entities (`LoyaltyCard`) never leave the service: the controller maps them to the generated `Card` DTO with MapStruct (`CardMapper`), which also keeps `ownerId` off the wire.
 
 ```sh
 npx nx validate api-contract   # lint the contract; codegen depends on it

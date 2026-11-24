@@ -19,6 +19,7 @@ Both sides generate their types from `libs/api-contract/openapi.yaml`. Change th
 
 - Dependencies point one way: `controller` -> `service` -> `repository`. A controller never touches a repository; a service knows nothing about HTTP.
 - Controllers implement the interfaces generated from the contract and only translate between HTTP and service calls.
+- Services return entities; the controller maps them to the generated DTOs with MapStruct (`CardMapper`), so entities and generated HTTP types never mix.
 - The database schema is owned by Flyway migrations; Hibernate only validates.
 - Failures are mapped to problem details in one place (`GlobalExceptionHandler`), not in controllers.
 
