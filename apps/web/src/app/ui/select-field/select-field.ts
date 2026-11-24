@@ -1,7 +1,7 @@
 import { Component, input } from '@angular/core';
-import { FormField } from '@angular/forms/signals';
+import { type FieldTree, FormField } from '@angular/forms/signals';
 import { FieldErrors } from '../field-errors/field-errors';
-import { LabelledField } from '../labelled-field/labelled-field';
+import { fieldErrorState } from '../field-errors/field-error-state';
 
 /** A labelled select with its validation errors, bound to a Signal Forms field. */
 @Component({
@@ -12,20 +12,25 @@ import { LabelledField } from '../labelled-field/labelled-field';
       {{ label() }}
       <select
         [formField]="field()"
-        [attr.aria-invalid]="invalidMark()"
-        [attr.aria-describedby]="describedBy()"
+        [attr.aria-invalid]="errors.invalidMark()"
+        [attr.aria-describedby]="errors.describedBy()"
       >
         @for (option of options(); track option.value) {
           <option [value]="option.value">{{ option.label }}</option>
         }
       </select>
     </label>
-    @if (showsErrors()) {
-      <app-field-errors [id]="errorId" [errors]="field()().errors()" />
+    @if (errors.showsErrors()) {
+      <app-field-errors [id]="errors.errorId" [errors]="field()().errors()" />
     }
   `,
 })
-export class SelectField extends LabelledField {
+export class SelectField {
+  readonly label = input.required<string>();
+  readonly field = input.required<FieldTree<string>>();
+
+  protected readonly errors = fieldErrorState(this.field);
+
   readonly options =
     input.required<readonly { value: string; label: string }[]>();
 }
