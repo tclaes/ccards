@@ -17,6 +17,13 @@ export const appRoutes: Route[] = [
       ),
   },
   {
+    path: 'cards/:id',
+    loadComponent: () =>
+      import('./features/cards/checkout/checkout-page').then(
+        (m) => m.CheckoutPage,
+      ),
+  },
+  {
     path: 'cards',
     loadComponent: () =>
       import('./features/cards/cards-page/cards-page').then((m) => m.CardsPage),
