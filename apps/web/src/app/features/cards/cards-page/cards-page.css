@@ -45,6 +45,7 @@
 
 /* Pico styles `ul li` with a marker; the grid has none. */
 .grid > li {
+  display: flex;
   list-style: none;
   margin: 0;
   padding: 0;
@@ -52,7 +53,8 @@
 }
 
 .grid a {
-  display: block;
+  display: flex;
+  flex: 1;
   text-decoration: none;
 }
 
