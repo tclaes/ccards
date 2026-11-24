@@ -17,7 +17,7 @@ import {
   isValidationProblem,
 } from '../../../core/http/error.interceptor';
 import { NotificationService } from '../../../core/notification/notification.service';
-import { ConfirmDialog } from '../../../ui';
+import { ConfirmDialog } from '@ui';
 import { CardForm } from './card-form';
 import {
   type CardFormValue,

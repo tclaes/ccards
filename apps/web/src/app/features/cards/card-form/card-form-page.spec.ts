@@ -9,7 +9,7 @@ import { Router, provideRouter } from '@angular/router';
 import { BarcodeType, provideApi } from '@ccards/api-client';
 import type { Card } from '@ccards/api-client';
 import { errorInterceptor } from '../../../core/http/error.interceptor';
-import { DIALOG_CHOICE } from '../../../ui';
+import { DIALOG_CHOICE } from '@ui';
 import { NotificationService } from '../../../core/notification/notification.service';
 import { CardFormPage } from './card-form-page';
 

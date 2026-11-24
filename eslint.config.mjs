@@ -14,7 +14,8 @@ export default [
         'error',
         {
           enforceBuildableLibDependency: true,
-          allow: ['^.*/eslint(\\.base)?\\.config\\.[cm]?[jt]s$'],
+          // `@ui` is the web app's own UI library alias, not another project.
+          allow: ['^.*/eslint(\\.base)?\\.config\\.[cm]?[jt]s$', '^@ui$'],
           depConstraints: [
             {
               sourceTag: '*',

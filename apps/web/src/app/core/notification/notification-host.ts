@@ -1,5 +1,5 @@
 import { Component, ElementRef, computed, effect, inject } from '@angular/core';
-import { Toast } from '../../ui';
+import { Toast } from '@ui';
 import { NotificationService } from './notification.service';
 
 /**

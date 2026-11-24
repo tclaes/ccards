@@ -4,7 +4,7 @@ import { RouterLink } from '@angular/router';
 import { CardsService } from '@ccards/api-client';
 import { firstValueFrom } from 'rxjs';
 import { SKIP_ERROR_NOTIFICATION } from '../../../core/http/error.interceptor';
-import { StateMessage } from '../../../ui';
+import { StateMessage } from '@ui';
 import { CardTile } from '../card-tile/card-tile';
 
 const PAGE_SIZE = 100;

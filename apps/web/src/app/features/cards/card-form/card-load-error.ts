@@ -1,5 +1,5 @@
 import { Component, output } from '@angular/core';
-import { StateMessage } from '../../../ui';
+import { StateMessage } from '@ui';
 
 /** Shown when the card to edit could not be fetched. */
 @Component({
