@@ -57,3 +57,9 @@ export function toCardPatch(card: Card, value: CardFormValue): CardPatch {
   if (value.note !== before.note) patch.note = value.note || null;
   return patch;
 }
+
+/** Something wrong with the values: for one field, or for the form as a whole when `field` is absent. */
+export interface FormProblem {
+  readonly field?: string;
+  readonly message: string;
+}

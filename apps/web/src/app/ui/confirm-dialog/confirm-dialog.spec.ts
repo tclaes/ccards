@@ -1,6 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ConfirmDialog } from './confirm-dialog';
+import { DIALOG_CHOICE } from './confirm-dialog.model';
 
 @Component({
   imports: [ConfirmDialog],
@@ -58,16 +59,16 @@ describe('ConfirmDialog', () => {
       'Delete Clubkaart?',
     );
     expect(dialog.textContent).toContain('cannot be undone');
-    expect(button('confirm').textContent).toContain('Delete');
+    expect(button(DIALOG_CHOICE.confirm).textContent).toContain('Delete');
   });
 
   it('emits confirmed when the confirm button is used', () => {
-    choose('confirm');
+    choose(DIALOG_CHOICE.confirm);
     expect(fixture.componentInstance.log).toEqual(['confirmed']);
   });
 
   it('emits cancelled for the cancel button', () => {
-    choose('cancel');
+    choose(DIALOG_CHOICE.cancel);
     expect(fixture.componentInstance.log).toEqual(['cancelled']);
   });
 
@@ -77,7 +78,7 @@ describe('ConfirmDialog', () => {
   });
 
   it('does not leak a previous choice into the next close', () => {
-    choose('confirm');
+    choose(DIALOG_CHOICE.confirm);
     fixture.detectChanges();
     fixture.componentInstance.open.set(true);
     fixture.detectChanges();

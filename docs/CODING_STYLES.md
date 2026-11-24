@@ -12,7 +12,7 @@ Write the simplest code that satisfies the spec and is easy to read in six month
 - One function does one thing and fits on a screen. Extract when a block needs a comment to explain what it does; name the extraction instead.
 - Use the framework's own mechanism before writing your own (`ResponseEntityExceptionHandler`, Bean Validation, Angular signals, `HttpInterceptorFn`).
 - Keep the control flow flat: early returns instead of nested `if`s, no boolean flag parameters that switch behaviour.
-- Avoid `if / else` (and `else if` chains). Handle the special or failing case first and `return` (or `throw`), then let the normal case continue unindented. Prefer a guard clause, a lookup map, polymorphism, or a `switch` over `else` branches; never nest ternaries.
+- Avoid `if / else` (and `else if` chains), including the one-line form `if (x) a(); else b();`. Handle the special or failing case first and `return` (or `throw`), then let the normal case continue unindented. Prefer a guard clause, a lookup map, polymorphism, or a `switch` over `else` branches; never nest ternaries.
 
 ```ts
 // Avoid
@@ -31,6 +31,8 @@ function label(count: number): string {
 }
 ```
 
+- Never swallow an error. A `catch` block handles it: show it, map it to a result, or rethrow it. An empty `catch`, or one holding only a comment, is not handling. If another layer already reported the failure, opt out of that layer instead (for example `SKIP_ERROR_NOTIFICATION`) and handle the error where you catch it.
+- Name a value that code compares against or hands to other code (a dialog's return value, a status string) as a constant in a `<name>.model.ts` file, not as a string literal repeated in several places.
 - A new dependency needs a reason a few lines of code cannot answer.
 
 In this repo: `GlobalExceptionHandler` extends Spring's base class and overrides only what differs; `NotificationService` is one signal and a timer map, not an event bus.

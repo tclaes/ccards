@@ -8,7 +8,7 @@
 ## 2. Validation
 
 - [x] 2.1 Add `cardNumberError(type, number)` with GS1 length and check digit; verify with unit tests using `4006381333931`, `4006381333932`, `96385074`, `036000291452`, a 9-digit EAN-8, letters in UPC-A and `AB-1234` for `CODE_128`.
-- [x] 2.2 Add `splitViolations(violations, fields)` separating violations for form fields from the rest; verify with unit tests for known, unknown and empty `errors`.
+- [x] 2.2 Map a failed save to form problems (`FormProblem`): a field on the form shows at that field, any other in the form's own area; verified by the server-error scenarios in `card-form-page.spec.ts`.
 
 ## 3. UI library
 

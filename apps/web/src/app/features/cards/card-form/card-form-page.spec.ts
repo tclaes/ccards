@@ -9,6 +9,7 @@ import { Router, provideRouter } from '@angular/router';
 import { BarcodeType, provideApi } from '@ccards/api-client';
 import type { Card } from '@ccards/api-client';
 import { errorInterceptor } from '../../../core/http/error.interceptor';
+import { DIALOG_CHOICE } from '../../../ui';
 import { NotificationService } from '../../../core/notification/notification.service';
 import { CardFormPage } from './card-form-page';
 
@@ -283,6 +284,38 @@ describe('CardFormPage', () => {
       expect(navigate).toHaveBeenCalledWith(['/cards']);
     });
 
+    it('shows a loading state until the card arrives', async () => {
+      await open('c1');
+
+      expect(el.querySelector('[role="status"]')?.textContent).toContain(
+        'Loading card',
+      );
+      expect(el.querySelector('form')).toBeNull();
+      http.expectOne('/api/cards/c1');
+    });
+
+    it('shows a load error with a retry that fetches again, without a toast', async () => {
+      await open('c1');
+      http
+        .expectOne('/api/cards/c1')
+        .flush(
+          { title: 'Server error', status: 500 },
+          { status: 500, statusText: 'Server Error' },
+        );
+      await settle();
+
+      expect(el.querySelector('[role="alert"]')?.textContent).toContain(
+        'could not load',
+      );
+      expect(toasts()).toEqual([]);
+
+      el.querySelector('button')?.click();
+      await settle();
+      http.expectOne('/api/cards/c1').flush(saved);
+      await settle();
+      expect(input('Name').value).toBe('Clubkaart');
+    });
+
     it('shows a not-found state with a link back for an unknown card', async () => {
       await open('missing');
       http
@@ -349,7 +382,7 @@ describe('CardFormPage', () => {
       });
 
       it('deletes after confirming and returns to the overview', async () => {
-        dialog().close('confirm');
+        dialog().close(DIALOG_CHOICE.confirm);
         await settle();
 
         request('DELETE', '/api/cards/c1').flush(null, {
@@ -361,7 +394,7 @@ describe('CardFormPage', () => {
       });
 
       it('sends nothing when cancelled', async () => {
-        dialog().close('cancel');
+        dialog().close(DIALOG_CHOICE.cancel);
         await settle();
 
         http.expectNone('/api/cards/c1');
@@ -370,7 +403,7 @@ describe('CardFormPage', () => {
       });
 
       it('stays on the page with a notification when deleting fails', async () => {
-        dialog().close('confirm');
+        dialog().close(DIALOG_CHOICE.confirm);
         await settle();
         request('DELETE', '/api/cards/c1').flush(
           { title: 'Server error', status: 500 },

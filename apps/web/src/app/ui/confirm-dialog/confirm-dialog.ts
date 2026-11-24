@@ -7,6 +7,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { Button } from '../button/button';
+import { DIALOG_CHOICE } from './confirm-dialog.model';
 
 /**
  * Asks the user to confirm before something irreversible. Dumb: the owner
@@ -22,10 +23,10 @@ import { Button } from '../button/button';
         <h1 id="confirm-dialog-title">{{ title() }}</h1>
         <p>{{ message() }}</p>
         <form method="dialog">
-          <button appButton type="submit" value="cancel" autofocus>
+          <button appButton type="submit" [value]="choice.cancel" autofocus>
             Cancel
           </button>
-          <button appButton type="submit" value="confirm">
+          <button appButton type="submit" [value]="choice.confirm">
             {{ confirmLabel() }}
           </button>
         </form>
@@ -44,6 +45,8 @@ export class ConfirmDialog {
   /** The user cancelled with the button or Escape. */
   readonly cancelled = output<void>();
 
+  protected readonly choice = DIALOG_CHOICE;
+
   private readonly dialog =
     viewChild.required<ElementRef<HTMLDialogElement>>('dialog');
 
@@ -51,8 +54,8 @@ export class ConfirmDialog {
     effect(() => {
       const dialog = this.dialog().nativeElement;
       if (this.open() === dialog.open) return;
-      if (this.open()) dialog.showModal();
-      else dialog.close();
+      if (!this.open()) return dialog.close();
+      dialog.showModal();
     });
   }
 
@@ -61,7 +64,7 @@ export class ConfirmDialog {
     const choice = dialog.returnValue;
     // Escape sets no value; reset so a stale value cannot leak into the next close.
     dialog.returnValue = '';
-    if (choice === 'confirm') this.confirmed.emit();
-    else this.cancelled.emit();
+    if (choice !== DIALOG_CHOICE.confirm) return this.cancelled.emit();
+    this.confirmed.emit();
   }
 }

@@ -2,9 +2,3 @@
   display: block;
   padding: var(--space-4);
 }
-
-.actions {
-  align-items: center;
-  display: flex;
-  gap: var(--space-4);
-}
