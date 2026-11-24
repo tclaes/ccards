@@ -19,7 +19,10 @@ class Host {
 const flush = () => new Promise((resolve) => setTimeout(resolve));
 
 describe('keepScreenAwake', () => {
-  afterEach(() => Reflect.deleteProperty(navigator, 'wakeLock'));
+  afterEach(() => {
+    Reflect.deleteProperty(navigator, 'wakeLock');
+    vi.restoreAllMocks();
+  });
 
   function create(wakeLock?: { request: ReturnType<typeof vi.fn> }) {
     // Installs (or removes) `navigator.wakeLock` on the real test document.
@@ -88,12 +91,29 @@ describe('keepScreenAwake', () => {
     expect(() => create()).not.toThrow();
   });
 
-  it('carries on when the request is refused', async () => {
-    const request = vi.fn(async () => {
-      throw new DOMException('denied', 'NotAllowedError');
-    });
-    const fixture = create({ request });
+  it('reports a refused request and carries on', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const denied = new DOMException('denied', 'NotAllowedError');
+    const fixture = create({ request: vi.fn().mockRejectedValue(denied) });
     await flush();
+    expect(warn).toHaveBeenCalledWith('Could not keep the screen on', denied);
     expect(() => fixture.destroy()).not.toThrow();
+  });
+
+  it('reports a failing release', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const failure = new Error('release failed');
+    const sentinel = {
+      released: false,
+      release: vi.fn().mockRejectedValue(failure),
+    };
+    const fixture = create({ request: vi.fn(async () => sentinel) });
+    await flush();
+    fixture.destroy();
+    await flush();
+    expect(warn).toHaveBeenCalledWith(
+      'Could not release the screen wake lock',
+      failure,
+    );
   });
 });

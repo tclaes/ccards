@@ -4,7 +4,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CardsService } from '@ccards/api-client';
 import type { Card } from '@ccards/api-client';
-import { ConfirmDialog } from '@ui';
+import { ConfirmDialog, LoadingIndicator, NotFound } from '@ui';
 import { firstValueFrom, map } from 'rxjs';
 import {
   SKIP_ERROR_NOTIFICATION,
@@ -22,8 +22,6 @@ import {
   toFormValue,
 } from './card-form.model';
 import { CardLoadError } from './card-load-error';
-import { CardLoading } from './card-loading';
-import { CardNotFound } from './card-not-found';
 
 /** This page shows its own errors, so the interceptor must not also raise a notification. */
 function ownErrors() {
@@ -36,18 +34,22 @@ const CONFLICT_MESSAGE =
 /** Adds a card (`/cards/new`) or edits one (`/cards/:id/edit`). */
 @Component({
   selector: 'app-card-form-page',
-  imports: [CardForm, CardLoadError, CardLoading, CardNotFound, ConfirmDialog],
+  imports: [CardForm, CardLoadError, ConfirmDialog, LoadingIndicator, NotFound],
   template: `
     <h1>{{ id() ? 'Edit card' : 'Add card' }}</h1>
     @switch (view()) {
       @case ('not-found') {
-        <app-card-not-found />
+        <app-not-found
+          message="This card does not exist (anymore)."
+          linkLabel="Back to cards"
+          linkTo="/cards"
+        />
       }
       @case ('error') {
         <app-card-load-error (retry)="card.reload()" />
       }
       @case ('loading') {
-        <app-card-loading />
+        <app-loading-indicator message="Loading card…" />
       }
       @case ('form') {
         <app-card-form

@@ -29,7 +29,7 @@ describe('CheckoutBarcode', () => {
     el.querySelector('img')?.dispatchEvent(new Event('error'));
     fixture.detectChanges();
     expect(el.querySelector('img')).toBeNull();
-    expect(el.querySelector('[role="status"]')?.textContent).toContain(
+    expect(el.querySelector('[role="alert"]')?.textContent).toContain(
       'could not be shown',
     );
     expect(el.querySelector('.number')?.textContent).toBe('5412345678900');

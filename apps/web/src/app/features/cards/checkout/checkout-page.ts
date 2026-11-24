@@ -3,7 +3,7 @@ import { Component, computed, inject, resource } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { CardsService } from '@ccards/api-client';
-import { StateMessage } from '@ui';
+import { LoadingIndicator, NotFound, StateMessage } from '@ui';
 import { firstValueFrom, map } from 'rxjs';
 import { SKIP_ERROR_NOTIFICATION } from '../../../core/http/error.interceptor';
 import { keepScreenAwake } from '../../../core/wake-lock/wake-lock';
@@ -12,15 +12,25 @@ import { CheckoutBarcode } from './checkout-barcode';
 /** Shows one card's barcode full screen for scanning at the till, with the screen kept on. */
 @Component({
   selector: 'app-checkout-page',
-  imports: [CheckoutBarcode, RouterLink, StateMessage],
+  imports: [
+    CheckoutBarcode,
+    LoadingIndicator,
+    NotFound,
+    RouterLink,
+    StateMessage,
+  ],
   template: `
     <a routerLink="/cards">Back to cards</a>
     @switch (view()) {
       @case ('loading') {
-        <p role="status">Loading card…</p>
+        <app-loading-indicator message="Loading card…" />
       }
       @case ('not-found') {
-        <p role="alert">This card does not exist (anymore).</p>
+        <app-not-found
+          message="This card does not exist (anymore)."
+          linkLabel="Back to cards"
+          linkTo="/cards"
+        />
       }
       @case ('error') {
         <app-state-message

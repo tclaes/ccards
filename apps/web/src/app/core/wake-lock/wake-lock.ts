@@ -1,6 +1,10 @@
 import { DestroyRef, inject } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
 
+function releaseFailed(error: unknown): void {
+  console.warn('Could not release the screen wake lock', error);
+}
+
 /**
  * Keeps the screen on until the calling component or service is destroyed. Call it in an
  * injection context. The browser drops the lock when the tab is hidden, so it asks again
@@ -26,8 +30,9 @@ export function keepScreenAwake(): void {
       } else {
         sentinel = acquired;
       }
-    } catch {
-      // Refused (battery saver, permissions policy): carry on without it.
+    } catch (error) {
+      // Refused (battery saver, permissions policy): the page works without it.
+      console.warn('Could not keep the screen on', error);
     } finally {
       requesting = false;
     }
@@ -40,7 +45,7 @@ export function keepScreenAwake(): void {
   inject(DestroyRef).onDestroy(() => {
     destroyed = true;
     doc.removeEventListener('visibilitychange', onVisibilityChange);
-    void sentinel?.release().catch(() => undefined);
+    sentinel?.release().catch(releaseFailed);
   });
   void acquire();
 }

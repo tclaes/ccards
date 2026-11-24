@@ -31,7 +31,7 @@ function label(count: number): string {
 }
 ```
 
-- Never swallow an error. A `catch` block handles it: show it, map it to a result, or rethrow it. An empty `catch`, or one holding only a comment, is not handling. If another layer already reported the failure, opt out of that layer instead (for example `SKIP_ERROR_NOTIFICATION`) and handle the error where you catch it.
+- Never swallow an error. A `catch` block handles it: show it, map it to a result, or rethrow it. An empty `catch`, one holding only a comment, and `.catch(() => undefined)` are not handling. For a best-effort feature that may fail without harm (a browser API that can be refused), report the failure with `console.warn` and carry on. If another layer already reported the failure, opt out of that layer instead (for example `SKIP_ERROR_NOTIFICATION`) and handle the error where you catch it.
 - Name a value that code compares against or hands to other code (a dialog's return value, a status string) as a constant in a `<name>.model.ts` file, not as a string literal repeated in several places.
 - Prefer composition over inheritance. Share behaviour through a helper function, an injected service, `hostDirectives` or content projection, not by extending a class. In Angular, do not make an abstract base `@Directive()` or component to share a few inputs or computed state: put the logic in a function and call it from each component (for example `fieldErrorState`). Extend a class only when a framework requires it or implements a contract for you (Spring's `ResponseEntityExceptionHandler`, `Error`), and never to reuse code alone.
 - A new dependency needs a reason a few lines of code cannot answer.
@@ -83,4 +83,5 @@ Apply these to classes, services and components that have real collaborators. Do
 1. Could this be simpler without losing required behaviour? (KISS)
 2. Is every added line demanded by the task or spec? Anything speculative removed? (YAGNI)
 3. Does each class or component have one job, and are its dependencies injected? (SOLID)
-4. Are lint, tests and build green (`npx nx run-many -t lint test build --parallel=1`)?
+4. Is every `catch` (and `.catch()`) handling its error: shown, mapped to a result or rethrown, never swallowed?
+5. Are lint, tests and build green (`npx nx run-many -t lint test build --parallel=1`)?
