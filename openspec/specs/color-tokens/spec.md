@@ -6,10 +6,10 @@ Keeps every colour of the web app coming from Pico's CSS variables, so colours a
 ## Requirements
 
 ### Requirement: Colours come from Pico variables
-The web app SHALL NOT write colour values by hand. Colour tokens in `apps/web/src/tokens.css` SHALL reference Pico CSS variables (`var(--pico-*)`), and all other styles SHALL reference colours through `var(--...)`.
+The web app SHALL NOT write colour values by hand. Colour tokens in `apps/web/src/colors.css` SHALL reference Pico CSS variables (`var(--pico-*)`), and all other styles SHALL reference colours through `var(--...)`.
 
 #### Scenario: Token derives from Pico
-- **WHEN** `tokens.css` defines a colour token such as `--color-danger`
+- **WHEN** `colors.css` defines a colour token such as `--color-danger`
 - **THEN** its value is a `var(--pico-*)` reference, not a colour literal
 
 #### Scenario: Pico theme changes
@@ -24,9 +24,20 @@ Stylelint SHALL report an error for hex colours, named colours and colour functi
 - **THEN** `nx lint web` fails
 
 #### Scenario: Colour function in tokens
-- **WHEN** `tokens.css` contains `--color-shadow: rgb(0 0 0 / 0.2)`
+- **WHEN** `colors.css` contains `--color-shadow: rgb(0 0 0 / 0.2)`
 - **THEN** `nx lint web` fails
 
 #### Scenario: Keywords stay allowed
 - **WHEN** a stylesheet uses `transparent` or `currentColor`
 - **THEN** `nx lint web` does not report it
+
+### Requirement: Colour tokens live in colors.css
+The web app SHALL define every `--color-*` design token in `apps/web/src/colors.css` and none in `tokens.css`. `colors.css` SHALL be loaded before `tokens.css`. This applies to the global stylesheets: a component may still re-declare a `--color-*` custom property inside its own `:host` rule to re-resolve it for that component (for example under a forced light scheme), because that is a scoped override, not a design token.
+
+#### Scenario: Colours are defined in one file
+- **WHEN** a developer searches the global stylesheets in `apps/web/src` for `--color-` declarations
+- **THEN** they are all in `colors.css`
+
+#### Scenario: Rendering is unchanged
+- **WHEN** the app is built and opened after the move
+- **THEN** every page looks the same as before, in light and dark mode

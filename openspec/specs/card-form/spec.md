@@ -40,7 +40,7 @@ The web app SHALL provide a form at `/cards/:id/edit` that is pre-filled with th
 - **THEN** a "card not found" message with a link back to the overview is shown instead of the form
 
 #### Scenario: Entry point from the overview
-- **WHEN** the user selects a card tile on the overview
+- **WHEN** the user selects the "Edit" link of a card on the overview
 - **THEN** that card's edit form opens
 
 #### Scenario: Card changed elsewhere

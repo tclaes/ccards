@@ -18,4 +18,4 @@
 ## 4. Check
 
 - [x] 4.1 Run `npx nx affected -t lint test build`, then open the page against the local stack and check in the browser: barcode on white in light and dark mode, number readable, not-found and error states, and the Edit link
-- [ ] 4.2 Check on a phone or a mobile emulation over HTTPS or localhost that the screen stays on and the wake lock is released when leaving the page
+- [x] 4.2 Check on a phone or a mobile emulation over HTTPS or localhost that the screen stays on and the wake lock is released when leaving the page

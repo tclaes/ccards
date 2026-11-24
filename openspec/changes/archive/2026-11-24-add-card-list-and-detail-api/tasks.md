@@ -19,4 +19,4 @@
 ## 4. Documentation and integration check
 
 - [x] 4.1 Mention the card endpoints and the entity/DTO/MapStruct approach in `README.md` / `docs/ARCHITECTURE.md` where endpoints or layering are described; verify the text matches the implemented paths and parameters
-- [ ] 4.2 Run `npx nx affected -t lint test build` and verify it passes; with the `local` profile and a seeded card, verify `GET /api/cards` and `GET /api/cards/{id}` respond as specified (also visible in Swagger UI)
+- [x] 4.2 Run `npx nx affected -t lint test build` and verify it passes; with the `local` profile and a seeded card, verify `GET /api/cards` and `GET /api/cards/{id}` respond as specified (also visible in Swagger UI)
