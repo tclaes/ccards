@@ -14,6 +14,10 @@ const PAGE_SIZE = 100;
   selector: 'app-cards-page',
   imports: [CardTile, LoadingIndicator, RouterLink, StateMessage],
   template: `
+    <header class="brand">
+      <img src="favicon.svg" alt="" width="32" height="32" />
+      <span class="brand-name">ccards</span>
+    </header>
     <h1>My cards</h1>
     <a routerLink="/cards/new">Add card</a>
     @switch (cards.status()) {

@@ -3,7 +3,7 @@
   --color-barcode-frame: var(--pico-background-color);
   --color-on-barcode-frame: var(--pico-color);
   background-color: var(--color-barcode-frame);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-lg);
   box-sizing: border-box;
   color: var(--color-on-barcode-frame);
   display: block;

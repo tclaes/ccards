@@ -57,5 +57,14 @@ export default {
       files: ['**/tokens.css', '**/colors.css'],
       rules: { 'scale-unlimited/declaration-strict-value': null },
     },
+    {
+      // The theme is the one file that holds raw colour values (the Pico palette).
+      files: ['**/theme.css'],
+      rules: {
+        'color-no-hex': null,
+        'function-disallowed-list': null,
+        'scale-unlimited/declaration-strict-value': null,
+      },
+    },
   ],
 };

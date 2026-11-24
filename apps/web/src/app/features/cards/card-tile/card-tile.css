@@ -1,7 +1,7 @@
 :host {
   /* Re-resolved here, inside the light scheme (see card-tile.ts). */
   --color-tile-text-dark: var(--pico-color);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-lg);
   box-shadow: var(--shadow-md);
   box-sizing: border-box;
   display: flex;

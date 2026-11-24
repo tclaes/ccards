@@ -15,7 +15,11 @@
   /* Shape and elevation */
   --border-width: 1px;
   --radius-sm: 0.25rem;
+  --radius-lg: 1.25rem;
   --shadow-md: var(--pico-card-box-shadow);
+
+  /* Pico's own radius drives buttons and form fields. */
+  --pico-border-radius: var(--radius-lg);
 
   /* Sizes */
   --size-barcode-max: 40rem;
