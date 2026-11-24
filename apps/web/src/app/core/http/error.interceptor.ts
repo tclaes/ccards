@@ -25,14 +25,15 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
         error instanceof HttpErrorResponse &&
         !req.context.get(SKIP_ERROR_NOTIFICATION)
       ) {
-        notifications.error(messageFor(error));
+        notifications.error(describeHttpError(error));
       }
       return throwError(() => error);
     }),
   );
 };
 
-function messageFor(error: HttpErrorResponse): string {
+/** The user-facing message for a failed call, also for callers that opted out of the notification. */
+export function describeHttpError(error: HttpErrorResponse): string {
   if (error.status === 0) {
     return 'Cannot reach the server. Check your connection and try again.';
   }
@@ -58,6 +59,6 @@ function isProblem(body: unknown): body is Problem {
   );
 }
 
-function isValidationProblem(problem: Problem): problem is ValidationProblem {
-  return Array.isArray((problem as ValidationProblem).errors);
+export function isValidationProblem(body: unknown): body is ValidationProblem {
+  return isProblem(body) && Array.isArray((body as ValidationProblem).errors);
 }

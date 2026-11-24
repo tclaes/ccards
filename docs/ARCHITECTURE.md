@@ -27,6 +27,7 @@ Both sides generate their types from `libs/api-contract/openapi.yaml`. Change th
 
 ```text
 ui/         Dumb, reusable components (the UI library)
+shared/     Framework-level helpers with no components, reusable across forms and features (`shared/utils/form`)
 core/       App-wide singletons and smart components: services, interceptors, shells
 features/   One folder per feature: smart container + its feature-specific dumb parts
 ```
@@ -55,9 +56,15 @@ Example in this repo: `NotificationHost` (smart, `core/notification`) reads `Not
 
 When unsure, ask: "could I use this component on another screen with different data and no providers?" If yes, it is dumb and belongs in `ui/`. If it needs a service, it is smart.
 
+### Shared helpers (`shared/`)
+
+- Plain functions and types that more than one form or feature can use, for example the `requiredText` validator in `shared/utils/form`. Nothing feature-specific lives here, and nothing in it imports from `features/`, `core/` or `ui/`.
+- Import them with the `@shared/*` path alias (`from '@shared/utils/form/required-text'`), not a relative path.
+- A helper used by one form only stays in that form's folder until a second form needs it (YAGNI).
+
 ### The UI library (`ui/`)
 
-- Every component in `ui/` is dumb. The public surface is `ui/index.ts`; import from there (`from '../../ui'`), never from a component file.
+- Every component in `ui/` is dumb. The public surface is `ui/index.ts`; import from there with the `@ui` path alias (`from '@ui'`, set in `apps/web/tsconfig.json`), never with a relative path and never from a component file.
 - Build a `ui/` component when a second place needs it (YAGNI); until then keep it in its feature.
 - Styling uses the design tokens in `src/tokens.css`; stylelint enforces tokens and alphabetical property order.
 - Pico CSS (`@picocss/pico`, `pico.css`) is loaded once in `styles.css` and styles native elements. Colours are never written by hand: `tokens.css` maps the colour tokens onto Pico's `--pico-*` variables, and stylelint rejects hex, named and `rgb()`-style colours in every CSS file. Where Pico's styling of a native element gets in the way of a `ui/` component, reset it in that component's CSS.

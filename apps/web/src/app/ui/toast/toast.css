@@ -18,3 +18,8 @@
   flex: 1;
   white-space: pre-line;
 }
+
+:host([data-severity='success']) {
+  border-color: var(--color-success);
+  color: var(--color-on-success-surface);
+}

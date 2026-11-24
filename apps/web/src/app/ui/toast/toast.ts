@@ -22,6 +22,7 @@ import { Button } from '../button/button';
   styleUrl: './toast.css',
   host: {
     role: 'alert',
+    '[attr.data-severity]': 'severity()',
     '(mouseenter)': 'paused.emit()',
     '(mouseleave)': 'resumed.emit()',
     '(focusin)': 'paused.emit()',
@@ -30,6 +31,8 @@ import { Button } from '../button/button';
 })
 export class Toast {
   readonly message = input.required<string>();
+  /** Success is styled apart from the default error look. */
+  readonly severity = input<'error' | 'success'>('error');
   /** The user asked to remove the toast. */
   readonly dismissed = output<void>();
   /** Hover or focus entered: the owner should stop any countdown. */

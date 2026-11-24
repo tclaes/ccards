@@ -1,0 +1,29 @@
+:host {
+  display: contents;
+}
+
+dialog:modal {
+  overscroll-behavior: contain;
+}
+
+dialog::backdrop {
+  overflow: hidden;
+  overscroll-behavior: contain;
+}
+
+form button {
+  width: auto;
+}
+
+form {
+  display: flex;
+  gap: var(--space-3);
+  justify-content: flex-end;
+  margin: 0;
+}
+
+/* Pico lays a dialog out as a flex row around one <article>, which carries the card look. */
+h1 {
+  font-size: var(--font-size-lg);
+  margin-bottom: var(--space-3);
+}

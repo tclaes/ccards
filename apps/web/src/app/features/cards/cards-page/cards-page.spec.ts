@@ -3,6 +3,7 @@ import {
   HttpTestingController,
   provideHttpClientTesting,
 } from '@angular/common/http/testing';
+import { provideRouter } from '@angular/router';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import type { Card } from '@ccards/api-client';
 import { errorInterceptor } from '../../../core/http/error.interceptor';
@@ -41,6 +42,7 @@ describe('CardsPage', () => {
   beforeEach(async () => {
     TestBed.configureTestingModule({
       providers: [
+        provideRouter([]),
         provideHttpClient(withInterceptors([errorInterceptor])),
         provideHttpClientTesting(),
       ],
@@ -86,6 +88,18 @@ describe('CardsPage', () => {
     expect(tiles[0].style.backgroundColor).toBe('rgb(227, 6, 19)');
     expect(tiles[1].style.backgroundColor).toBe('var(--color-tile-default)');
     expect(el.querySelector('[role="status"]')).toBeNull();
+  });
+
+  it('links to the add form and to the edit form of each card', async () => {
+    pendingRequest().flush(page([card('Clubkaart', 'Delhaize')]));
+    await settle();
+
+    expect(el.querySelector('a[href="/cards/new"]')?.textContent).toContain(
+      'Add card',
+    );
+    expect(el.querySelector('.grid a')?.getAttribute('href')).toBe(
+      '/cards/Clubkaart/edit',
+    );
   });
 
   it('shows the empty state when there are no cards', async () => {

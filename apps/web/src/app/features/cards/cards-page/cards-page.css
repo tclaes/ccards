@@ -17,3 +17,8 @@
   list-style: none;
   padding: 0;
 }
+
+.grid a {
+  display: block;
+  text-decoration: none;
+}

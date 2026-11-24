@@ -1,5 +1,5 @@
 import { Component, ElementRef, computed, effect, inject } from '@angular/core';
-import { Toast } from '../../ui';
+import { Toast } from '@ui';
 import { NotificationService } from './notification.service';
 
 /**
@@ -14,6 +14,7 @@ import { NotificationService } from './notification.service';
     @for (n of service.notifications(); track n.id) {
       <app-toast
         [message]="n.message"
+        [severity]="n.severity"
         (dismissed)="service.dismiss(n.id)"
         (paused)="service.pause(n.id)"
         (resumed)="service.resume(n.id)"

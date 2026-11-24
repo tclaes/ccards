@@ -14,7 +14,12 @@ export default [
         'error',
         {
           enforceBuildableLibDependency: true,
-          allow: ['^.*/eslint(\\.base)?\\.config\\.[cm]?[jt]s$'],
+          // `@ui` and `@shared` are the web app's own aliases, not another project.
+          allow: [
+            '^.*/eslint(\\.base)?\\.config\\.[cm]?[jt]s$',
+            '^@ui$',
+            '^@shared/',
+          ],
           depConstraints: [
             {
               sourceTag: '*',
