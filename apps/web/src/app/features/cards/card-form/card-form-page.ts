@@ -4,6 +4,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CardsService } from '@ccards/api-client';
 import type { Card } from '@ccards/api-client';
+import { ConfirmDialog } from '@ui';
 import { firstValueFrom, map } from 'rxjs';
 import {
   SKIP_ERROR_NOTIFICATION,
@@ -11,7 +12,6 @@ import {
   isValidationProblem,
 } from '../../../core/http/error.interceptor';
 import { NotificationService } from '../../../core/notification/notification.service';
-import { ConfirmDialog } from '@ui';
 import { CardForm } from './card-form';
 import {
   type CardFormValue,
@@ -24,6 +24,11 @@ import {
 import { CardLoadError } from './card-load-error';
 import { CardLoading } from './card-loading';
 import { CardNotFound } from './card-not-found';
+
+/** This page shows its own errors, so the interceptor must not also raise a notification. */
+function ownErrors() {
+  return { context: new HttpContext().set(SKIP_ERROR_NOTIFICATION, true) };
+}
 
 const CONFLICT_MESSAGE =
   'This card was changed elsewhere. Reload it to see the latest version, then try again.';
@@ -84,13 +89,8 @@ export class CardFormPage {
 
   protected readonly card = resource({
     params: () => this.id(),
-    // The page shows its own states, so no toast for a failed load.
     loader: ({ params }) =>
-      firstValueFrom(
-        this.api.getCard(params, 'body', false, {
-          context: new HttpContext().set(SKIP_ERROR_NOTIFICATION, true),
-        }),
-      ),
+      firstValueFrom(this.api.getCard(params, 'body', false, ownErrors())),
   });
 
   protected readonly view = computed(() => {
@@ -118,11 +118,7 @@ export class CardFormPage {
   protected async remove(id: string): Promise<void> {
     this.confirmingDelete.set(false);
     try {
-      await firstValueFrom(
-        this.api.deleteCard(id, 'body', false, {
-          context: new HttpContext().set(SKIP_ERROR_NOTIFICATION, true),
-        }),
-      );
+      await firstValueFrom(this.api.deleteCard(id, 'body', false, ownErrors()));
     } catch (error) {
       this.notifyFailure(error);
       return;
@@ -144,9 +140,7 @@ export class CardFormPage {
 
   private async create(value: CardFormValue): Promise<void> {
     await firstValueFrom(
-      this.api.createCard(toCardInput(value), 'body', false, {
-        context: new HttpContext().set(SKIP_ERROR_NOTIFICATION, true),
-      }),
+      this.api.createCard(toCardInput(value), 'body', false, ownErrors()),
     );
   }
 
@@ -155,22 +149,15 @@ export class CardFormPage {
     // Only `version` left: nothing changed, so there is nothing to send.
     if (Object.keys(patch).length === 1) return;
     await firstValueFrom(
-      this.api.patchCard(saved.id, patch, 'body', false, {
-        context: new HttpContext().set(SKIP_ERROR_NOTIFICATION, true),
-      }),
+      this.api.patchCard(saved.id, patch, 'body', false, ownErrors()),
     );
   }
 
   /** What the form should show for a failed save; failures that are not about the form are notified. */
   private problemsFrom(error: unknown): readonly FormProblem[] {
-    if (error instanceof HttpErrorResponse && error.status === 409) {
-      return [{ message: CONFLICT_MESSAGE }];
-    }
-    if (
-      error instanceof HttpErrorResponse &&
-      error.status === 400 &&
-      isValidationProblem(error.error)
-    ) {
+    if (!(error instanceof HttpErrorResponse)) throw error;
+    if (error.status === 409) return [{ message: CONFLICT_MESSAGE }];
+    if (error.status === 400 && isValidationProblem(error.error)) {
       return error.error.errors;
     }
     this.notifyFailure(error);
