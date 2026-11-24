@@ -191,6 +191,7 @@ The `CI` check must have run at least once before it can be required. To remove 
 - **Frontend:** `libs/api-client` holds a `typescript-angular` client generated into `libs/api-client/src/generated/` (git-ignored). Import it as `@ccards/api-client`. `web` build/test/serve/lint run `api-client:codegen` first.
 - **Docs:** Swagger UI at http://localhost:8080/swagger-ui, rendering the contract file.
 - **Cards:** `GET /api/cards?page=&size=` (page of cards ordered by name, `size` 1-100, default 20) and `GET /api/cards/{id}` (404 problem details for an unknown id). Entities (`LoyaltyCard`) never leave the service: the controller maps them to the generated `Card` DTO with MapStruct (`CardMapper`), which also keeps `ownerId` off the wire.
+- **Barcode:** `GET /api/cards/{id}/barcode?format=png|svg` (default `png`) draws the card number as its `barcodeType` (EAN-13, EAN-8, UPC-A, Code 128, QR) with ZXing, in `BarcodeService`. The response has an `ETag` (`"<card version>-<format>"`) and `Cache-Control: no-cache, private`, so a repeat request with `If-None-Match` gets 304 without rendering. An unknown `format` is a 400, an unknown card a 404, and a number its type cannot encode (for example non-ASCII in Code 128) a 422.
 
 ```sh
 npx nx validate api-contract   # lint the contract; codegen depends on it

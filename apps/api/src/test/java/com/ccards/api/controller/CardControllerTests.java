@@ -29,6 +29,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import com.ccards.api.error.GlobalExceptionHandler;
 import com.ccards.api.repository.LoyaltyCard;
 import com.ccards.api.service.CardNotFoundException;
+import com.ccards.api.service.BarcodeService;
 import com.ccards.api.service.CardService;
 
 /** Web layer only: the service is mocked, so no database or Docker is needed. */
@@ -43,6 +44,9 @@ class CardControllerTests {
 
 	@MockitoBean
 	private CardService service;
+
+	@MockitoBean
+	private BarcodeService barcodes;
 
 	@Test
 	void listsTheFirstPageWithDefaultsAndFixedOrder() throws Exception {

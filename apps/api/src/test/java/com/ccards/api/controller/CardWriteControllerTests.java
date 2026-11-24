@@ -23,6 +23,7 @@ import org.springframework.test.web.servlet.assertj.MockMvcTester.MockMvcRequest
 import com.ccards.api.error.GlobalExceptionHandler;
 import com.ccards.api.repository.LoyaltyCard;
 import com.ccards.api.service.CardNotFoundException;
+import com.ccards.api.service.BarcodeService;
 import com.ccards.api.service.CardService;
 import com.ccards.api.service.InvalidPatchException;
 
@@ -39,6 +40,9 @@ class CardWriteControllerTests {
 
 	@MockitoBean
 	private CardService service;
+
+	@MockitoBean
+	private BarcodeService barcodes;
 
 	private LoyaltyCard storedCard() {
 		LoyaltyCard card = CardTestData.card(ID, "Groceries");
