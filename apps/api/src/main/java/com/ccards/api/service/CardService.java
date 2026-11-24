@@ -1,5 +1,6 @@
 package com.ccards.api.service;
 
+import java.time.Instant;
 import java.util.Set;
 import java.util.UUID;
 
@@ -70,6 +71,14 @@ public class CardService {
 		apply(card, patch.merged());
 		// Flush so the response carries the new version and a stale concurrent write fails here.
 		return repository.saveAndFlush(card);
+	}
+
+	/** Counts one use of the card. Not an edit: the card's version and updatedAt stay as they are. */
+	@Transactional
+	public void recordUse(UUID id) {
+		if (repository.recordUse(id, Instant.now()) == 0) {
+			throw new CardNotFoundException(id);
+		}
 	}
 
 	@Transactional

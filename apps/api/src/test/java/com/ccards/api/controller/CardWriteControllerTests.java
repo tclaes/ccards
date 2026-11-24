@@ -5,6 +5,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
 
 import java.util.Map;
 import java.util.UUID;
@@ -132,6 +133,26 @@ class CardWriteControllerTests {
 		doThrow(new CardNotFoundException(ID)).when(service).delete(ID);
 
 		assertThat(mvc.delete().uri("/api/cards/{id}", ID)).hasStatus(404)
+			.hasContentType(MediaType.APPLICATION_PROBLEM_JSON);
+	}
+
+	@Test
+	void usageReturns204WithoutBody() {
+		assertThat(mvc.post().uri("/api/cards/{id}/usage", ID)).hasStatus(204).body().isEmpty();
+		verify(service).recordUse(ID);
+	}
+
+	@Test
+	void usageOfUnknownCardIs404Problem() {
+		doThrow(new CardNotFoundException(ID)).when(service).recordUse(ID);
+
+		assertThat(mvc.post().uri("/api/cards/{id}/usage", ID)).hasStatus(404)
+			.hasContentType(MediaType.APPLICATION_PROBLEM_JSON);
+	}
+
+	@Test
+	void usageWithAnInvalidIdIs400Problem() {
+		assertThat(mvc.post().uri("/api/cards/{id}/usage", "not-a-uuid")).hasStatus(400)
 			.hasContentType(MediaType.APPLICATION_PROBLEM_JSON);
 	}
 

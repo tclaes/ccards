@@ -1,5 +1,12 @@
 import { HttpContext, HttpErrorResponse } from '@angular/common/http';
-import { Component, computed, inject, resource } from '@angular/core';
+import {
+  Component,
+  computed,
+  effect,
+  inject,
+  resource,
+  untracked,
+} from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { CardsService } from '@ccards/api-client';
@@ -80,6 +87,23 @@ export class CheckoutPage {
 
   constructor() {
     keepScreenAwake();
+    // Once per card id: a retry of the card load must not count as another use.
+    effect(() => {
+      const id = this.id();
+      if (id) untracked(() => this.registerUse(id));
+    });
+  }
+
+  /** Counting a use is secondary: its failure is logged, never shown, and never touches the page. */
+  private registerUse(id: string): void {
+    this.api
+      .registerCardUsage(id, 'body', false, {
+        context: new HttpContext().set(SKIP_ERROR_NOTIFICATION, true),
+      })
+      .subscribe({
+        error: (error: unknown) =>
+          console.warn('Could not register the use of the card', error),
+      });
   }
 
   private isNotFound(): boolean {
