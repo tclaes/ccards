@@ -4,6 +4,7 @@
 :root {
   /* Typography: every size derives from the base. */
   --font-size-base: 1rem;
+  --font-size-sm: calc(var(--font-size-base) * 0.875);
   --font-size-lg: calc(var(--font-size-base) * 1.25);
 
   /* Spacing */
@@ -11,15 +12,22 @@
   --space-2: 0.5rem;
   --space-3: 0.75rem;
   --space-4: 1rem;
+  --space-5: 1.5rem;
 
   /* Shape and elevation */
   --border-width: 1px;
   --radius-sm: 0.25rem;
+  --radius-lg: 1.25rem;
   --shadow-md: var(--pico-card-box-shadow);
+
+  /* Pico's own radius drives buttons and form fields. */
+  --pico-border-radius: var(--radius-lg);
 
   /* Sizes */
   --size-barcode-max: 40rem;
+  --size-icon: 1.125rem;
+  --size-icon-button: 2.25rem;
   --size-notification-max: 28rem;
-  --size-tile-height: 6rem;
+  --size-tile-height: 7rem;
   --size-tile-min: 10rem;
 }

@@ -1,4 +1,5 @@
 @import '@picocss/pico/css/pico.css';
+@import './theme.css';
 @import './colors.css';
 @import './tokens.css';
 

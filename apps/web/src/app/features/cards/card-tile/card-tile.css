@@ -1,17 +1,25 @@
 :host {
   /* Re-resolved here, inside the light scheme (see card-tile.ts). */
   --color-tile-text-dark: var(--pico-color);
-  border-radius: var(--radius-sm);
+  --color-tile-text-light: var(--pico-primary-inverse);
+  border-radius: var(--radius-lg);
   box-shadow: var(--shadow-md);
   box-sizing: border-box;
   display: flex;
+  flex: 1;
   flex-direction: column;
   gap: var(--space-1);
-  justify-content: flex-end;
+  justify-content: flex-start;
   min-block-size: var(--size-tile-height);
+  overflow-wrap: anywhere;
   padding: var(--space-4);
 }
 
 .name {
   font-size: var(--font-size-lg);
+}
+
+/* Keeps the store line clear of the edit button in the tile's bottom-right corner. */
+.store {
+  padding-inline-end: var(--size-icon-button);
 }

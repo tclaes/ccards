@@ -1,0 +1,20 @@
+/* Wallet theme (docs/design/proposals.html, proposal B): always dark, lime accent.
+   The only file with raw colour values; everything else uses the Pico variables below. */
+:root[data-theme='dark'] {
+  --pico-background-color: #12131a;
+  --pico-color: #f3f4f8;
+  --pico-muted-color: #8b8fa3;
+  --pico-card-background-color: #1c1e28;
+  --pico-card-box-shadow: none;
+  --pico-form-element-background-color: #1c1e28;
+  --pico-form-element-border-color: #2b2e3c;
+  --pico-muted-border-color: #2b2e3c;
+  --pico-primary: #b6f24a;
+  --pico-primary-background: #b6f24a;
+  --pico-primary-border: #b6f24a;
+  --pico-primary-hover: #c9f77a;
+  --pico-primary-hover-background: #c9f77a;
+  --pico-primary-hover-border: #c9f77a;
+  --pico-primary-underline: rgb(182 242 74 / 50%);
+  --pico-primary-inverse: #12131a;
+}

@@ -7,6 +7,8 @@
   --color-on-danger-surface: var(--pico-del-color);
   --color-success: var(--pico-ins-color);
   --color-on-success-surface: var(--pico-ins-color);
+  --color-control-surface: var(--pico-background-color);
+  --color-control-text: var(--pico-color);
   --color-tile-default: var(--pico-secondary-background);
   --color-tile-text-light: var(--pico-primary-inverse);
   --color-tile-text-dark: var(--pico-color);

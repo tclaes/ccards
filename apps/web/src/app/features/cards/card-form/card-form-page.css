@@ -1,4 +1,4 @@
 :host {
   display: block;
-  padding: var(--space-4);
+  padding: var(--space-5) var(--space-4);
 }

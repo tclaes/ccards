@@ -14,8 +14,14 @@ const PAGE_SIZE = 100;
   selector: 'app-cards-page',
   imports: [CardTile, LoadingIndicator, RouterLink, StateMessage],
   template: `
-    <h1>My cards</h1>
-    <a routerLink="/cards/new">Add card</a>
+    <header class="brand">
+      <img src="favicon.svg" alt="" width="32" height="32" />
+      <span class="brand-name">ccards</span>
+    </header>
+    <div class="title-row">
+      <h1>My cards</h1>
+      <a class="add" role="button" routerLink="/cards/new">Add card</a>
+    </div>
     @switch (cards.status()) {
       @case ('loading') {
         <app-loading-indicator message="Loading cards…" />
@@ -52,8 +58,13 @@ const PAGE_SIZE = 100;
                   class="edit"
                   [routerLink]="['/cards', card.id, 'edit']"
                   [attr.aria-label]="'Edit ' + card.name"
-                  >Edit</a
                 >
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path
+                      d="M4 20h4L19 9l-4-4L4 16v4Zm13.6-13.6 1.4-1.4a1.4 1.4 0 0 1 2 0l.6.6a1.4 1.4 0 0 1 0 2l-1.4 1.4-2.6-2.6Z"
+                    />
+                  </svg>
+                </a>
               </li>
             }
           </ul>

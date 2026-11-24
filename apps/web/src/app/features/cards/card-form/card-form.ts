@@ -67,11 +67,13 @@ function formField(name: string | undefined): keyof CardFormValue | undefined {
 
       <div class="actions">
         <button type="submit" [disabled]="form().submitting()">Save</button>
-        <a routerLink="/cards">Cancel</a>
+        <a class="secondary outline" role="button" routerLink="/cards"
+          >Cancel</a
+        >
         @if (editing()) {
           <button
             type="button"
-            class="secondary"
+            class="delete outline"
             (click)="deleteRequested.emit()"
           >
             Delete

@@ -1,5 +1,25 @@
+:host {
+  display: block;
+}
+
 .actions {
-  align-items: center;
   display: flex;
-  gap: var(--space-4);
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.actions > * {
+  flex: 1;
+  margin: 0;
+  text-align: center;
+}
+
+.actions > [type='submit'] {
+  flex-basis: 100%;
+}
+
+/* The destructive action reads as danger, outlined so Save stays the main button. */
+.delete {
+  --pico-color: var(--color-danger);
+  border-color: var(--color-danger);
 }
