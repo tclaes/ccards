@@ -16,6 +16,8 @@
   --color-surface: var(--pico-card-background-color);
   --color-danger: var(--pico-form-element-invalid-active-border-color);
   --color-on-danger-surface: var(--pico-del-color);
+  --color-success: var(--pico-ins-color);
+  --color-on-success-surface: var(--pico-ins-color);
   --color-tile-default: var(--pico-secondary-background);
   --color-tile-text-light: var(--pico-primary-inverse);
   --color-tile-text-dark: var(--pico-color);

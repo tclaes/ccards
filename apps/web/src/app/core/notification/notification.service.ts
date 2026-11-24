@@ -16,10 +16,18 @@ export class NotificationService {
   readonly notifications = this.items.asReadonly();
 
   error(message: string): void {
+    this.add(message, 'error');
+  }
+
+  success(message: string): void {
+    this.add(message, 'success');
+  }
+
+  private add(message: string, severity: Notification['severity']): void {
     const notification: Notification = {
       id: this.nextId++,
       message,
-      severity: 'error',
+      severity,
     };
     const kept = [...this.items(), notification].slice(-MAX_NOTIFICATIONS);
     this.items()
