@@ -1,0 +1,13 @@
+/* Colour tokens: Pico's semantic variables, which also switch with light/dark mode.
+   Colours are never written by hand; component CSS uses these tokens (see tokens.css
+   for everything else). */
+:root {
+  --color-surface: var(--pico-card-background-color);
+  --color-danger: var(--pico-form-element-invalid-active-border-color);
+  --color-on-danger-surface: var(--pico-del-color);
+  --color-success: var(--pico-ins-color);
+  --color-on-success-surface: var(--pico-ins-color);
+  --color-tile-default: var(--pico-secondary-background);
+  --color-tile-text-light: var(--pico-primary-inverse);
+  --color-tile-text-dark: var(--pico-color);
+}
