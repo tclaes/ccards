@@ -1,6 +1,6 @@
 /* Design tokens. Component CSS must use these (enforced by stylelint, see
-   stylelint.config.mjs); raw spacing and font sizes belong only here. Colours
-   are never written by hand: they come from Pico's --pico-* variables. */
+   stylelint.config.mjs); raw spacing and font sizes belong only here. Colour
+   tokens live in colors.css. */
 :root {
   /* Typography: every size derives from the base. */
   --font-size-base: 1rem;
@@ -11,16 +11,6 @@
   --space-2: 0.5rem;
   --space-3: 0.75rem;
   --space-4: 1rem;
-
-  /* Colors: Pico's semantic variables, which also switch with light/dark mode. */
-  --color-surface: var(--pico-card-background-color);
-  --color-danger: var(--pico-form-element-invalid-active-border-color);
-  --color-on-danger-surface: var(--pico-del-color);
-  --color-success: var(--pico-ins-color);
-  --color-on-success-surface: var(--pico-ins-color);
-  --color-tile-default: var(--pico-secondary-background);
-  --color-tile-text-light: var(--pico-primary-inverse);
-  --color-tile-text-dark: var(--pico-color);
 
   /* Shape and elevation */
   --border-width: 1px;

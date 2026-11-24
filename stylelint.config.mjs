@@ -1,4 +1,4 @@
-/** Component CSS must use design tokens (apps/web/src/tokens.css), never raw values. */
+/** Component CSS must use design tokens (apps/web/src/tokens.css and colors.css), never raw values. */
 const tokenProperties = [
   // colors
   '/color$/',
@@ -54,7 +54,7 @@ export default {
   overrides: [
     {
       // The only place raw values are allowed: where tokens are defined.
-      files: ['**/tokens.css'],
+      files: ['**/tokens.css', '**/colors.css'],
       rules: { 'scale-unlimited/declaration-strict-value': null },
     },
   ],
