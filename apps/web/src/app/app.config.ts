@@ -4,6 +4,7 @@ import {
   provideBrowserGlobalErrorListeners,
 } from '@angular/core';
 import { provideRouter } from '@angular/router';
+import { provideApi } from '@ccards/api-client';
 import { appRoutes } from './app.routes';
 import { errorInterceptor } from './core/http/error.interceptor';
 
@@ -12,5 +13,7 @@ export const appConfig: ApplicationConfig = {
     provideBrowserGlobalErrorListeners(),
     provideRouter(appRoutes),
     provideHttpClient(withInterceptors([errorInterceptor])),
+    // Same-origin: `nx serve web` proxies /api to the backend (proxy.conf.json).
+    provideApi(''),
   ],
 };

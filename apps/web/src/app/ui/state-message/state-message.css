@@ -1,0 +1,12 @@
+:host {
+  display: block;
+  padding: var(--space-4);
+  text-align: center;
+}
+
+button {
+  border-radius: var(--radius-sm);
+  border-style: solid;
+  border-width: var(--border-width);
+  padding: var(--space-2) var(--space-4);
+}
