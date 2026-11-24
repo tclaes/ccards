@@ -1,10 +1,11 @@
 import { Route } from '@angular/router';
 
 export const appRoutes: Route[] = [
+  { path: '', pathMatch: 'full', redirectTo: 'cards' },
   {
-    path: '',
-    pathMatch: 'full',
-    loadComponent: () => import('./home/home').then((m) => m.Home),
+    path: 'cards',
+    loadComponent: () =>
+      import('./features/cards/cards-page/cards-page').then((m) => m.CardsPage),
   },
-  { path: '**', redirectTo: '' },
+  { path: '**', redirectTo: 'cards' },
 ];
