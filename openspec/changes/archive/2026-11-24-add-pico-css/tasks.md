@@ -14,4 +14,4 @@
 
 - [x] 3.1 Update `docs/ARCHITECTURE.md` and `docs/CODING_STYLES.md` (colours come from Pico variables, how to add a colour token)
 - [x] 3.2 Run `npx nx affected -t lint test build` and check the app in the browser
-- [ ] 3.3 CC-11: note in the PR that `--color-tile-*` and `StateMessage` must use Pico variables if this change merges first
+- [x] 3.3 CC-11: note in the PR that `--color-tile-*` and `StateMessage` must use Pico variables if this change merges first
