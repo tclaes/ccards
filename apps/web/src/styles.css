@@ -4,3 +4,11 @@
 @import './tokens.css';
 
 /* You can add global styles to this file, and also import other style files */
+
+/* One keyboard focus ring for every control, readable on any background. Pico draws a faint
+   shadow with selectors more specific than this one, hence !important. */
+:focus-visible {
+  box-shadow: var(--shadow-focus) !important;
+  outline: var(--outline-focus) !important;
+  outline-offset: var(--pico-outline-width);
+}

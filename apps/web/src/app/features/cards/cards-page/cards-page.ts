@@ -17,6 +17,10 @@ import { SKIP_ERROR_NOTIFICATION } from '../../../core/http/error.interceptor';
 import { LoadingIndicator, StateMessage } from '@ui';
 import { CardSortPreference } from '../card-sort/card-sort-preference';
 import { CardSortSelect } from '../card-sort/card-sort-select';
+import {
+  CARD_SORT_ANNOUNCEMENTS,
+  type CardSort,
+} from '../card-sort/card-sort.model';
 import { CardTile } from '../card-tile/card-tile';
 
 const PAGE_SIZE = 100;
@@ -58,7 +62,7 @@ const PAGE_SIZE = 100;
       @case ('grid') {
         <app-card-sort-select
           [sort]="preference.sort()"
-          (sortChange)="preference.choose($event)"
+          (sortChange)="chooseSort($event)"
         />
         <ul class="grid">
           @for (card of items(); track card.id) {
@@ -103,6 +107,8 @@ const PAGE_SIZE = 100;
         </ul>
       }
     }
+    <!-- Outside the switch: a live region must exist before its text changes. -->
+    <p class="visually-hidden" role="status">{{ announcement() }}</p>
   `,
   styleUrl: './cards-page.css',
 })
@@ -158,6 +164,11 @@ export class CardsPage {
     return page.content.length === 0 ? 'empty' : 'grid';
   });
 
+  protected readonly announcement = signal('');
+
+  /** An order the user just chose, until its list is on screen and announced. */
+  private sortToAnnounce?: CardSort;
+
   /** A star that had focus when its card changed: moving it in the list drops the focus. */
   private starToRefocus?: HTMLButtonElement;
 
@@ -165,7 +176,15 @@ export class CardsPage {
     afterRenderEffect(() => {
       this.items(); // Runs again once a new list is on screen.
       this.restoreStarFocus();
+      this.announceSort();
     });
+  }
+
+  protected chooseSort(sort: CardSort): void {
+    // Emptied first, so that a text announced before is announced again.
+    this.announcement.set('');
+    this.sortToAnnounce = sort;
+    this.preference.choose(sort);
   }
 
   protected toggleFavorite(card: Card, star: HTMLButtonElement): void {
@@ -191,5 +210,15 @@ export class CardsPage {
     this.starToRefocus = undefined;
     // Only when the focus was lost: never take it from where the user went since.
     if (this.document.activeElement === this.document.body) star.focus();
+  }
+
+  private announceSort(): void {
+    const sort = this.sortToAnnounce;
+    // A failed fetch leaves it pending, so a successful retry announces it.
+    if (!sort || this.cards.status() !== 'resolved') return;
+    this.sortToAnnounce = undefined;
+    const count = this.items().length;
+    const cards = count === 1 ? '1 card' : `${count} cards`;
+    this.announcement.set(`${CARD_SORT_ANNOUNCEMENTS[sort]}, ${cards}`);
   }
 }

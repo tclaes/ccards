@@ -28,3 +28,9 @@
 - [x] 5.1 Run `npx nx affected -t lint test build` with Docker running, so the database tests are not skipped
 - [x] 5.2 Run the API on the local stack and the web app, and verify in the browser at phone and desktop width: mark and unmark, all three orders, the choice surviving a reload, and a long card name not overlapping the buttons
 - [x] 5.3 Run `/sentry-skills:code-simplifier` and then `/sentry-skills:code-review` on the changed files, fix correct findings and re-run 5.1
+
+## 6. Announcement and focus ring
+
+- [x] 6.1 Announce a newly chosen sort order from a visually hidden status element on the overview; verify specs cover the text and count, one card, nothing before the list arrives, on first load or after a favourite change, repeated changes, and a failed fetch followed by a retry
+- [x] 6.2 Add the global `:focus-visible` ring with its tokens and round the tile link; verify `npx nx lint web` passes and, in the browser, that the ring shows on a star and edit button over light and dark tiles, on a tile, on "Add card", on the sort control and on a form field
+- [x] 6.3 Run `npx nx affected -t lint test build`, then `/sentry-skills:code-simplifier` and `/sentry-skills:code-review` on the new changes, and re-run the checks

@@ -48,3 +48,26 @@ The web app SHALL remember the chosen sort order on the device and use it the ne
 #### Scenario: Storage unavailable
 - **WHEN** reading or writing the browser storage fails
 - **THEN** the overview shows the cards, the order can still be changed for the current visit and no error is shown to the user
+
+### Requirement: A new sort order is announced
+After the user chooses another sort order, the page SHALL tell screen readers once, when the new list is on screen, which order it is and how many cards it has, without moving focus. The first load, a return to the overview and a favourite change SHALL NOT be announced this way.
+
+#### Scenario: Order is announced
+- **WHEN** the user chooses "Most used" and the list of four cards arrives
+- **THEN** "Sorted by most used, 4 cards" is announced politely and focus stays where it was
+
+#### Scenario: Not before the list arrives
+- **WHEN** the user has chosen another order and the list has not arrived yet
+- **THEN** nothing is announced
+
+#### Scenario: Every change is announced
+- **WHEN** the user chooses "Last used" and later "Name" again
+- **THEN** each new list is announced
+
+#### Scenario: Nothing to announce
+- **WHEN** the overview is opened, or the list is fetched again after a favourite change
+- **THEN** no sort order is announced
+
+#### Scenario: Fetching the new order fails
+- **WHEN** the list for a newly chosen order cannot be fetched
+- **THEN** only the error message is announced, and the order is announced once a retry succeeds

@@ -53,6 +53,8 @@
 }
 
 .grid a {
+  /* The tile's radius, so the focus ring follows it. */
+  border-radius: var(--radius-lg);
   display: flex;
   flex: 1;
   text-decoration: none;
@@ -99,4 +101,15 @@
 
 .favorite[aria-pressed='true'] svg {
   fill: currentColor;
+}
+
+/* For screen readers only. Not display: none, which would silence it. */
+.visually-hidden {
+  block-size: 1px;
+  clip-path: inset(50%);
+  inline-size: 1px;
+  margin: 0;
+  overflow: hidden;
+  position: absolute;
+  white-space: nowrap;
 }

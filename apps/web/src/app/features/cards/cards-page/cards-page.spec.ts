@@ -94,6 +94,9 @@ describe('CardsPage', () => {
     await settle();
   }
 
+  const announcement = () =>
+    el.querySelector('p[role="status"]')?.textContent?.trim();
+
   const star = (name: string) =>
     el.querySelector(
       `button[aria-label="Favorite ${name}"]`,
@@ -116,7 +119,7 @@ describe('CardsPage', () => {
   ] as const;
 
   it('shows a loading indicator while the request is in flight', () => {
-    expect(el.querySelector('[role="status"]')?.textContent).toContain(
+    expect(el.querySelector('app-loading-indicator')?.textContent).toContain(
       'Loading',
     );
     expect(el.querySelector('.grid')).toBeNull();
@@ -139,7 +142,7 @@ describe('CardsPage', () => {
     expect(tiles[0].textContent).toContain('Delhaize');
     expect(tiles[0].style.backgroundColor).toBe('rgb(227, 6, 19)');
     expect(tiles[1].style.backgroundColor).toBe('var(--color-tile-default)');
-    expect(el.querySelector('[role="status"]')).toBeNull();
+    expect(el.querySelector('app-loading-indicator')).toBeNull();
   });
 
   it('links to the add form, and per card to its checkout and its edit form', async () => {
@@ -180,7 +183,7 @@ describe('CardsPage', () => {
 
     el.querySelector('button')?.click();
     await settle();
-    expect(el.querySelector('[role="status"]')?.textContent).toContain(
+    expect(el.querySelector('app-loading-indicator')?.textContent).toContain(
       'Loading',
     );
 
@@ -213,7 +216,7 @@ describe('CardsPage', () => {
     expect(request.request.params.get('sort')).toBe('mostUsed');
     expect(names()).toEqual(['Aldi', 'Colruyt']);
     expect(sortSelect().value).toBe('mostUsed');
-    expect(el.querySelector('[role="status"]')).toBeNull();
+    expect(el.querySelector('app-loading-indicator')).toBeNull();
 
     request.flush(page([card('Colruyt', 'Colruyt'), card('Aldi', 'Aldi')]));
     await settle();
@@ -244,7 +247,7 @@ describe('CardsPage', () => {
 
     el.querySelector('button')?.click();
     await settle();
-    expect(el.querySelector('[role="status"]')?.textContent).toContain(
+    expect(el.querySelector('app-loading-indicator')?.textContent).toContain(
       'Loading',
     );
     expect(el.querySelector('.grid')).toBeNull();
@@ -267,7 +270,7 @@ describe('CardsPage', () => {
     expect(await answerFavorite('Colruyt')).toBe('PUT');
 
     expect(names()).toEqual(['Aldi', 'Colruyt']);
-    expect(el.querySelector('[role="status"]')).toBeNull();
+    expect(el.querySelector('app-loading-indicator')).toBeNull();
 
     await showCards(favorite('Colruyt'), card('Aldi', 'Aldi'));
     expect(names()).toEqual(['Colruyt', 'Aldi']);
@@ -335,5 +338,55 @@ describe('CardsPage', () => {
     expect(TestBed.inject(NotificationService).notifications()).toHaveLength(1);
     expect(warn).toHaveBeenCalled();
     http.verify();
+  });
+
+  it('announces a new order and the number of cards once the list is on screen', async () => {
+    expect(announcement()).toBe('');
+    await showCards(card('Aldi', 'Aldi'), card('Colruyt', 'Colruyt'));
+    expect(announcement()).toBe('');
+    sortSelect().focus();
+
+    await chooseSort('mostUsed');
+    expect(announcement()).toBe('');
+
+    await showCards(card('Colruyt', 'Colruyt'), card('Aldi', 'Aldi'));
+    expect(announcement()).toBe('Sorted by most used, 2 cards');
+    expect(document.activeElement).toBe(sortSelect());
+  });
+
+  it('empties the announcement on every new choice, so each one is heard', async () => {
+    await showCards(card('Aldi', 'Aldi'));
+    await chooseSort('lastUsed');
+    await showCards(card('Aldi', 'Aldi'));
+    expect(announcement()).toBe('Sorted by last used, 1 card');
+
+    await chooseSort('name');
+    expect(announcement()).toBe('');
+    await showCards(card('Aldi', 'Aldi'));
+    expect(announcement()).toBe('Sorted by name, 1 card');
+  });
+
+  it('does not announce a favorite change', async () => {
+    await showCards(card('Aldi', 'Aldi'));
+
+    star('Aldi').click();
+    await answerFavorite('Aldi');
+    await showCards(favorite('Aldi'));
+
+    expect(announcement()).toBe('');
+  });
+
+  it('announces the new order only when a retry succeeds after a failure', async () => {
+    await showCards(card('Aldi', 'Aldi'));
+    await chooseSort('lastUsed');
+    pendingRequest().flush(...serverError);
+    await settle();
+    expect(announcement()).toBe('');
+
+    el.querySelector('button')?.click();
+    await settle();
+    await showCards(card('Aldi', 'Aldi'));
+
+    expect(announcement()).toBe('Sorted by last used, 1 card');
   });
 });

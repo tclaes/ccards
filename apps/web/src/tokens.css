@@ -20,6 +20,11 @@
   --radius-lg: 1.25rem;
   --shadow-md: var(--pico-card-box-shadow);
 
+  /* Keyboard focus: an accent ring with a band of the page colour on both sides. */
+  --outline-focus: var(--pico-outline-width) solid var(--color-focus);
+  --shadow-focus: 0 0 0 calc(var(--pico-outline-width) * 3)
+    var(--color-focus-halo);
+
   /* Pico's own radius drives buttons and form fields. */
   --pico-border-radius: var(--radius-lg);
 
