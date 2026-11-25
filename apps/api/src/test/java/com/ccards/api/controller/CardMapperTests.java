@@ -7,6 +7,7 @@ import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import com.ccards.api.generated.model.BarcodeType;
 import com.ccards.api.generated.model.Card;
@@ -22,6 +23,7 @@ class CardMapperTests {
 		LoyaltyCard entity = CardTestData.card(id, "Albert Heijn");
 		entity.setColor("#00a0e2");
 		entity.setNote("Bonus card");
+		ReflectionTestUtils.setField(entity, "favorite", true);
 
 		Card card = mapper.toCard(entity);
 
@@ -32,6 +34,7 @@ class CardMapperTests {
 		assertThat(card.getBarcodeType()).isEqualTo(BarcodeType.EAN_13);
 		assertThat(card.getColor()).isEqualTo("#00a0e2");
 		assertThat(card.getNote()).isEqualTo("Bonus card");
+		assertThat(card.getFavorite()).isTrue();
 		assertThat(card.getCreatedAt()).isEqualTo(OffsetDateTime.parse("2026-01-02T03:04:05Z"));
 		assertThat(card.getUpdatedAt()).isEqualTo(OffsetDateTime.parse("2026-02-03T04:05:06Z"));
 	}

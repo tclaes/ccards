@@ -81,6 +81,14 @@ public class CardService {
 		}
 	}
 
+	/** Marks or unmarks a favorite. Not an edit: the card's version and updatedAt stay as they are. */
+	@Transactional
+	public void setFavorite(UUID id, boolean favorite) {
+		if (repository.setFavorite(id, favorite) == 0) {
+			throw new CardNotFoundException(id);
+		}
+	}
+
 	@Transactional
 	public void delete(UUID id) {
 		repository.delete(find(id));

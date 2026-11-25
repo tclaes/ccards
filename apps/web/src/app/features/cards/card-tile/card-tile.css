@@ -15,8 +15,10 @@
   padding: var(--space-4);
 }
 
+/* Keeps the name clear of the favorite button in the tile's top-right corner. */
 .name {
   font-size: var(--font-size-lg);
+  padding-inline-end: var(--size-icon-button);
 }
 
 /* Keeps the store line clear of the edit button in the tile's bottom-right corner. */

@@ -11,6 +11,7 @@ import com.ccards.api.service.BarcodeNotRenderableException;
 import com.ccards.api.service.CardNotFoundException;
 import com.ccards.api.service.InvalidPatchException;
 import com.ccards.api.service.UnsupportedFormatException;
+import com.ccards.api.service.UnsupportedSortException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.MessageSourceResolvable;
@@ -106,6 +107,12 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 	@ExceptionHandler(UnsupportedFormatException.class)
 	protected ResponseEntity<Object> handleUnsupportedFormat(UnsupportedFormatException ex, WebRequest request) {
 		return validationProblem(ex, List.of(new FieldViolation("format", "must be one of: png, svg")),
+				new HttpHeaders(), request);
+	}
+
+	@ExceptionHandler(UnsupportedSortException.class)
+	protected ResponseEntity<Object> handleUnsupportedSort(UnsupportedSortException ex, WebRequest request) {
+		return validationProblem(ex, List.of(new FieldViolation("sort", "must be one of: name, lastUsed, mostUsed")),
 				new HttpHeaders(), request);
 	}
 

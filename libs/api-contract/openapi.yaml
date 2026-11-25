@@ -31,7 +31,7 @@ paths:
     get:
       tags: [Cards]
       operationId: listCards
-      summary: List loyalty cards, one page at a time (ordered by name)
+      summary: List loyalty cards, one page at a time, favorites first
       parameters:
         - name: page
           in: query
@@ -50,6 +50,17 @@ paths:
             minimum: 1
             maximum: 100
             default: 20
+        - name: sort
+          in: query
+          description: |
+            Order of the cards. Favorites come first in every order, and the
+            order applies to the whole list before it is split into pages.
+            `name`: by name. `lastUsed`: most recently used first, never used
+            last. `mostUsed`: most uses first. Ties are ordered by name.
+          schema:
+            type: string
+            enum: [name, lastUsed, mostUsed]
+            default: name
       responses:
         '200':
           description: One page of cards
@@ -243,6 +254,47 @@ paths:
           $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalServerError'
+  /api/cards/{id}/favorite:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    put:
+      tags: [Cards]
+      operationId: markCardFavorite
+      summary: Mark the card as a favorite
+      description: |
+        Favorites come first in the card list. Marking is not an edit:
+        `version`, `updatedAt` and the barcode `ETag` stay as they are.
+        Repeating the request changes nothing.
+      responses:
+        '204':
+          description: The card is a favorite
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      tags: [Cards]
+      operationId: unmarkCardFavorite
+      summary: Remove the favorite mark from the card
+      description: |
+        The card itself is kept. Like marking, this is not an edit, and
+        repeating the request changes nothing.
+      responses:
+        '204':
+          description: The card is not a favorite
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
 components:
   responses:
     BadRequest:
@@ -358,11 +410,14 @@ components:
       allOf:
         - $ref: '#/components/schemas/CardInput'
         - type: object
-          required: [id, version, createdAt, updatedAt]
+          required: [id, version, favorite, createdAt, updatedAt]
           properties:
             id:
               type: string
               format: uuid
+            favorite:
+              type: boolean
+              description: Changed only through `/api/cards/{id}/favorite`
             version:
               type: integer
               format: int64

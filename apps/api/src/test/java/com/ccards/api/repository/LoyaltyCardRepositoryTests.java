@@ -248,4 +248,53 @@ class LoyaltyCardRepositoryTests {
 		assertThat(repository.findById(id).orElseThrow().getUsageCount()).isEqualTo(1);
 	}
 
+	@Test
+	void newCardIsNotAFavorite() {
+		UUID id = repository.saveAndFlush(newCard(BarcodeType.EAN_13, OWNER)).getId();
+		flushAndClear();
+
+		assertThat(repository.findById(id).orElseThrow().isFavorite()).isFalse();
+	}
+
+	@Test
+	void setFavoriteMarksAndUnmarksWithoutEditingTheCard() {
+		UUID id = repository.saveAndFlush(newCard(BarcodeType.EAN_13, OWNER)).getId();
+		flushAndClear();
+		LoyaltyCard before = repository.findById(id).orElseThrow();
+		Long version = before.getVersion();
+		Instant updatedAt = before.getUpdatedAt();
+
+		assertThat(repository.setFavorite(id, true)).isEqualTo(1);
+		flushAndClear();
+
+		LoyaltyCard marked = repository.findById(id).orElseThrow();
+		assertThat(marked.isFavorite()).isTrue();
+		assertThat(marked.getVersion()).isEqualTo(version);
+		assertThat(marked.getUpdatedAt()).isEqualTo(updatedAt);
+
+		assertThat(repository.setFavorite(id, false)).isEqualTo(1);
+		flushAndClear();
+
+		assertThat(repository.findById(id).orElseThrow().isFavorite()).isFalse();
+	}
+
+	@Test
+	void setFavoriteOfAnUnknownCardChangesNothing() {
+		assertThat(repository.setFavorite(UUID.randomUUID(), true)).isZero();
+	}
+
+	@Test
+	void editingACardDoesNotWriteBackAStaleFavoriteMark() {
+		UUID id = repository.saveAndFlush(newCard(BarcodeType.EAN_13, OWNER)).getId();
+		flushAndClear();
+		LoyaltyCard stale = repository.findById(id).orElseThrow(); // loaded while not a favorite
+		repository.setFavorite(id, true);
+
+		stale.setName("Renamed");
+		repository.saveAndFlush(stale);
+		flushAndClear();
+
+		assertThat(repository.findById(id).orElseThrow().isFavorite()).isTrue();
+	}
+
 }

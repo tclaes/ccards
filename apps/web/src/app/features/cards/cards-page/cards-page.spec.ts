@@ -16,12 +16,17 @@ function card(name: string, store: string, color?: string): Card {
     name,
     store,
     color,
+    favorite: false,
     cardNumber: '1',
     barcodeType: 'CODE_128',
     version: 0,
     createdAt: '2026-01-01T00:00:00Z',
     updatedAt: '2026-01-01T00:00:00Z',
   } as Card;
+}
+
+function favorite(name: string): Card {
+  return { ...card(name, `Store of ${name}`), favorite: true };
 }
 
 function page(content: Card[]) {
@@ -39,7 +44,13 @@ describe('CardsPage', () => {
   let http: HttpTestingController;
   let el: HTMLElement;
 
+  afterEach(() => {
+    el.remove();
+    vi.restoreAllMocks();
+  });
+
   beforeEach(async () => {
+    localStorage.clear();
     TestBed.configureTestingModule({
       providers: [
         provideRouter([]),
@@ -50,6 +61,8 @@ describe('CardsPage', () => {
     http = TestBed.inject(HttpTestingController);
     fixture = TestBed.createComponent(CardsPage);
     el = fixture.nativeElement as HTMLElement;
+    // In the document, so that elements can take focus.
+    document.body.append(el);
     await settle();
   });
 
@@ -62,6 +75,45 @@ describe('CardsPage', () => {
 
   const pendingRequest = () =>
     http.expectOne((r) => r.url.endsWith('/api/cards'));
+
+  async function showCards(...content: Card[]): Promise<void> {
+    pendingRequest().flush(page(content));
+    await settle();
+  }
+
+  const names = () =>
+    Array.from(el.querySelectorAll('app-card-tile .name'), (name) =>
+      name.textContent?.trim(),
+    );
+
+  const sortSelect = () => el.querySelector('select') as HTMLSelectElement;
+
+  async function chooseSort(value: string): Promise<void> {
+    sortSelect().value = value;
+    sortSelect().dispatchEvent(new Event('change'));
+    await settle();
+  }
+
+  const star = (name: string) =>
+    el.querySelector(
+      `button[aria-label="Favorite ${name}"]`,
+    ) as HTMLButtonElement;
+
+  const favoriteRequest = (name: string) =>
+    http.expectOne((r) => r.url.endsWith(`/api/cards/${name}/favorite`));
+
+  /** Answers the favorite request of a card and returns its method. */
+  async function answerFavorite(name: string): Promise<string> {
+    const pending = favoriteRequest(name);
+    pending.flush(null, { status: 204, statusText: 'No Content' });
+    await settle();
+    return pending.request.method;
+  }
+
+  const serverError = [
+    { title: 'Server error', status: 500 },
+    { status: 500, statusText: 'Server Error' },
+  ] as const;
 
   it('shows a loading indicator while the request is in flight', () => {
     expect(el.querySelector('[role="status"]')?.textContent).toContain(
@@ -135,5 +187,153 @@ describe('CardsPage', () => {
     pendingRequest().flush(page([card('Clubkaart', 'Delhaize')]));
     await settle();
     expect(el.querySelectorAll('app-card-tile')).toHaveLength(1);
+  });
+
+  it('offers to sort by name, last used and most used, and asks for name first', async () => {
+    const request = pendingRequest();
+    expect(request.request.params.get('sort')).toBe('name');
+    request.flush(page([card('Clubkaart', 'Delhaize')]));
+    await settle();
+
+    expect(el.querySelector('label[for="card-sort"]')?.textContent).toContain(
+      'Sort by',
+    );
+    expect(sortSelect().value).toBe('name');
+    expect(
+      Array.from(sortSelect().options, (option) => option.text.trim()),
+    ).toEqual(['Name', 'Last used', 'Most used']);
+  });
+
+  it('fetches again in the chosen order, keeping the cards on screen meanwhile', async () => {
+    await showCards(card('Aldi', 'Aldi'), card('Colruyt', 'Colruyt'));
+
+    await chooseSort('mostUsed');
+
+    const request = pendingRequest();
+    expect(request.request.params.get('sort')).toBe('mostUsed');
+    expect(names()).toEqual(['Aldi', 'Colruyt']);
+    expect(sortSelect().value).toBe('mostUsed');
+    expect(el.querySelector('[role="status"]')).toBeNull();
+
+    request.flush(page([card('Colruyt', 'Colruyt'), card('Aldi', 'Aldi')]));
+    await settle();
+    expect(names()).toEqual(['Colruyt', 'Aldi']);
+  });
+
+  it('asks for the remembered order', async () => {
+    await showCards(card('Aldi', 'Aldi'));
+    await chooseSort('lastUsed');
+    await showCards(card('Aldi', 'Aldi'));
+
+    // A new visit to the overview, as after 'Back to cards'.
+    const again = TestBed.createComponent(CardsPage);
+    again.detectChanges();
+
+    expect(pendingRequest().request.params.get('sort')).toBe('lastUsed');
+  });
+
+  it('shows the error state when a new order cannot be fetched, and retries in that order', async () => {
+    await showCards(card('Aldi', 'Aldi'));
+    await chooseSort('lastUsed');
+
+    pendingRequest().flush(...serverError);
+    await settle();
+
+    expect(el.querySelector('[role="alert"]')).not.toBeNull();
+    expect(el.querySelector('.grid')).toBeNull();
+
+    el.querySelector('button')?.click();
+    await settle();
+    expect(el.querySelector('[role="status"]')?.textContent).toContain(
+      'Loading',
+    );
+    expect(el.querySelector('.grid')).toBeNull();
+    expect(pendingRequest().request.params.get('sort')).toBe('lastUsed');
+  });
+
+  it('gives each tile a toggle button for its favorite mark, outside the card link', async () => {
+    await showCards(favorite('Aldi'), card('Colruyt', 'Colruyt'));
+
+    expect(star('Aldi').getAttribute('aria-pressed')).toBe('true');
+    expect(star('Colruyt').getAttribute('aria-pressed')).toBe('false');
+    expect(star('Aldi').type).toBe('button');
+    expect(el.querySelector('a button')).toBeNull();
+  });
+
+  it('marks a card and shows the new order without a loading indicator', async () => {
+    await showCards(card('Aldi', 'Aldi'), card('Colruyt', 'Colruyt'));
+
+    star('Colruyt').click();
+    expect(await answerFavorite('Colruyt')).toBe('PUT');
+
+    expect(names()).toEqual(['Aldi', 'Colruyt']);
+    expect(el.querySelector('[role="status"]')).toBeNull();
+
+    await showCards(favorite('Colruyt'), card('Aldi', 'Aldi'));
+    expect(names()).toEqual(['Colruyt', 'Aldi']);
+    expect(star('Colruyt').getAttribute('aria-pressed')).toBe('true');
+  });
+
+  it('removes the mark of a favorite', async () => {
+    await showCards(favorite('Colruyt'));
+
+    star('Colruyt').click();
+    expect(await answerFavorite('Colruyt')).toBe('DELETE');
+
+    await showCards(card('Colruyt', 'Colruyt'));
+    expect(star('Colruyt').getAttribute('aria-pressed')).toBe('false');
+  });
+
+  it('fetches again when a favorite changes while a new order is still loading', async () => {
+    await showCards(card('Aldi', 'Aldi'));
+    await chooseSort('mostUsed');
+    const outdated = pendingRequest();
+
+    star('Aldi').click();
+    await answerFavorite('Aldi');
+
+    outdated.flush(page([card('Aldi', 'Aldi')]));
+    await showCards(favorite('Aldi'));
+    expect(star('Aldi').getAttribute('aria-pressed')).toBe('true');
+  });
+
+  it('keeps the focus on the star of a card that moves', async () => {
+    await showCards(card('Aldi', 'Aldi'), card('Colruyt', 'Colruyt'));
+    star('Colruyt').focus();
+    star('Colruyt').click();
+    await answerFavorite('Colruyt');
+
+    // Moving a node drops its focus in a browser; make sure it is lost either way.
+    star('Colruyt').blur();
+    await showCards(favorite('Colruyt'), card('Aldi', 'Aldi'));
+
+    expect(document.activeElement).toBe(star('Colruyt'));
+  });
+
+  it('does not take the focus from where the user went meanwhile', async () => {
+    await showCards(card('Aldi', 'Aldi'), card('Colruyt', 'Colruyt'));
+    star('Colruyt').focus();
+    star('Colruyt').click();
+    await answerFavorite('Colruyt');
+
+    sortSelect().focus();
+    await showCards(favorite('Colruyt'), card('Aldi', 'Aldi'));
+
+    expect(document.activeElement).toBe(sortSelect());
+  });
+
+  it('keeps the cards and shows a notification when saving a favorite fails', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    await showCards(card('Aldi', 'Aldi'));
+
+    star('Aldi').click();
+    favoriteRequest('Aldi').flush(...serverError);
+    await settle();
+
+    expect(names()).toEqual(['Aldi']);
+    expect(star('Aldi').getAttribute('aria-pressed')).toBe('false');
+    expect(TestBed.inject(NotificationService).notifications()).toHaveLength(1);
+    expect(warn).toHaveBeenCalled();
+    http.verify();
   });
 });

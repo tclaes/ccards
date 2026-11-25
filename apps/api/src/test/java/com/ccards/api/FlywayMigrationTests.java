@@ -54,13 +54,39 @@ class FlywayMigrationTests {
 		List<Map<String, Object>> history = jdbc.queryForList(
 			"select version, success from flyway_schema_history where version is not null order by installed_rank");
 
-		assertThat(history).extracting(row -> row.get("version")).containsExactly("1", "2", "3", "4");
+		assertThat(history).extracting(row -> row.get("version")).containsExactly("1", "2", "3", "4", "5");
 		assertThat(history).allSatisfy(row -> assertThat(row).containsEntry("success", true));
 	}
 
 	@Test
 	void restartAppliesNothingAgain() {
 		assertThat(flyway.migrate().migrationsExecuted).isZero();
+	}
+
+	@Test
+	void cardsFromBeforeTheFavoriteMarkAreNotFavorites() {
+		String schema = "favorite_migration";
+		String table = schema + ".loyalty_card";
+		migrate(schema, "4");
+		jdbc.update("""
+				insert into %s (id, name, store, card_number, barcode_type, owner_id, created_at, updated_at)
+				values (gen_random_uuid(), 'n', 's', '1', 'CODE_128', gen_random_uuid(), now(), now())
+				""".formatted(table));
+
+		migrate(schema, "latest");
+
+		assertThat(jdbc.queryForList("select favorite from " + table, Boolean.class)).containsExactly(false);
+	}
+
+	/** Migrates a schema of its own, so the one the application uses is left alone. */
+	private void migrate(String schema, String target) {
+		Flyway.configure()
+			.configuration(flyway.getConfiguration())
+			.schemas(schema)
+			.defaultSchema(schema)
+			.target(target)
+			.load()
+			.migrate();
 	}
 
 	@Test
