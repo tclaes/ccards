@@ -53,28 +53,68 @@
 }
 
 .grid a {
+  /* The tile's radius, so the focus ring follows it. */
+  border-radius: var(--radius-lg);
   display: flex;
   flex: 1;
   text-decoration: none;
 }
 
-/* The edit button floats in the tile's corner; it is a sibling of the tile link, not nested in it. */
-.grid .edit {
+/* The corner buttons float over the tile; they are siblings of the tile link, not nested in it. */
+.grid .corner {
   align-items: center;
   background-color: var(--color-control-surface);
   block-size: var(--size-icon-button);
+  border: 0;
   border-radius: 50%;
   color: var(--color-control-text);
   display: flex;
   inline-size: var(--size-icon-button);
-  inset-block-end: var(--space-2);
   inset-inline-end: var(--space-2);
   justify-content: center;
+  margin: 0;
+  padding: 0;
   position: absolute;
 }
 
-.edit svg {
+.grid .edit {
+  inset-block-end: var(--space-2);
+}
+
+.grid .favorite {
+  inset-block-start: var(--space-2);
+}
+
+.corner svg {
   block-size: var(--size-icon);
   fill: currentColor;
   inline-size: var(--size-icon);
+}
+
+/* An outline until the card is a favorite, so the state does not depend on colour alone. */
+.favorite svg {
+  fill: transparent;
+  stroke: currentColor;
+  stroke-linejoin: round;
+  stroke-width: 2;
+}
+
+.favorite[aria-pressed='true'] svg {
+  fill: currentColor;
+}
+
+/* Its change is being saved. Only the icon dims, so the focus ring stays clear. */
+.favorite[aria-disabled='true'] svg {
+  opacity: var(--pico-form-element-disabled-opacity);
+}
+
+/* For screen readers only. Not display: none, which would silence it. */
+.visually-hidden {
+  block-size: 1px;
+  clip-path: inset(50%);
+  inline-size: 1px;
+  margin: 0;
+  overflow: hidden;
+  position: absolute;
+  white-space: nowrap;
 }

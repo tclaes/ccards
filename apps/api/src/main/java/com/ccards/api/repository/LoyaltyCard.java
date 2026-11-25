@@ -71,6 +71,10 @@ public class LoyaltyCard {
 	@Column(insertable = false, updatable = false)
 	private Instant lastUsedAt;
 
+	/** Read-only like the usage columns: only {@link LoyaltyCardRepository#setFavorite} changes it. */
+	@Column(nullable = false, insertable = false, updatable = false)
+	private boolean favorite;
+
 	protected LoyaltyCard() {
 		// for JPA
 	}
@@ -120,5 +124,7 @@ public class LoyaltyCard {
 	public long getUsageCount() { return usageCount; }
 
 	public Instant getLastUsedAt() { return lastUsedAt; }
+
+	public boolean isFavorite() { return favorite; }
 
 }

@@ -82,4 +82,22 @@ class CardServiceTests {
 		assertThatThrownBy(() -> service.recordUse(id)).isInstanceOf(CardNotFoundException.class);
 	}
 
+	@Test
+	void setFavoriteStoresTheMarkOfAKnownCard() {
+		UUID id = UUID.randomUUID();
+		when(repository.setFavorite(id, true)).thenReturn(1);
+
+		service.setFavorite(id, true);
+
+		verify(repository).setFavorite(id, true);
+	}
+
+	@Test
+	void setFavoriteThrowsForUnknownId() {
+		UUID id = UUID.randomUUID();
+		when(repository.setFavorite(id, false)).thenReturn(0);
+
+		assertThatThrownBy(() -> service.setFavorite(id, false)).isInstanceOf(CardNotFoundException.class);
+	}
+
 }

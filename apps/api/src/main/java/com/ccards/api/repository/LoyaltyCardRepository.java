@@ -22,4 +22,12 @@ public interface LoyaltyCardRepository extends JpaRepository<LoyaltyCard, UUID> 
 	@Query("update LoyaltyCard c set c.usageCount = c.usageCount + 1, c.lastUsedAt = :now where c.id = :id")
 	int recordUse(@Param("id") UUID id, @Param("now") Instant now);
 
+	/**
+	 * Marks or unmarks a favorite. A bulk update for the same reason as {@link #recordUse}: it is not an edit.
+	 * Returns the number of cards matched (0 when the id is unknown).
+	 */
+	@Modifying
+	@Query("update LoyaltyCard c set c.favorite = :favorite where c.id = :id")
+	int setFavorite(@Param("id") UUID id, @Param("favorite") boolean favorite);
+
 }

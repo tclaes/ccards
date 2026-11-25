@@ -156,4 +156,32 @@ class CardWriteControllerTests {
 			.hasContentType(MediaType.APPLICATION_PROBLEM_JSON);
 	}
 
+	@Test
+	void markFavoriteReturns204WithoutBody() {
+		assertThat(mvc.put().uri("/api/cards/{id}/favorite", ID)).hasStatus(204).body().isEmpty();
+		verify(service).setFavorite(ID, true);
+	}
+
+	@Test
+	void unmarkFavoriteReturns204WithoutBody() {
+		assertThat(mvc.delete().uri("/api/cards/{id}/favorite", ID)).hasStatus(204).body().isEmpty();
+		verify(service).setFavorite(ID, false);
+	}
+
+	@Test
+	void favoriteOfUnknownCardIs404Problem() {
+		doThrow(new CardNotFoundException(ID)).when(service).setFavorite(ID, true);
+
+		assertThat(mvc.put().uri("/api/cards/{id}/favorite", ID)).hasStatus(404)
+			.hasContentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON);
+	}
+
+	@Test
+	void favoriteWithAnInvalidIdIs400Problem() {
+		assertThat(mvc.put().uri("/api/cards/{id}/favorite", "not-a-uuid")).hasStatus(400)
+			.hasContentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON);
+		assertThat(mvc.delete().uri("/api/cards/{id}/favorite", "not-a-uuid")).hasStatus(400)
+			.hasContentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON);
+	}
+
 }

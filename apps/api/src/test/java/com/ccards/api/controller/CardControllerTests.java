@@ -14,6 +14,9 @@ import java.util.List;
 import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -21,7 +24,6 @@ import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -31,6 +33,7 @@ import com.ccards.api.repository.LoyaltyCard;
 import com.ccards.api.service.CardNotFoundException;
 import com.ccards.api.service.BarcodeService;
 import com.ccards.api.service.CardService;
+import com.ccards.api.service.CardSort;
 
 /** Web layer only: the service is mocked, so no database or Docker is needed. */
 @WebMvcTest(controllers = CardController.class, properties = "spring.datasource.url=jdbc:unused")
@@ -49,7 +52,7 @@ class CardControllerTests {
 	private BarcodeService barcodes;
 
 	@Test
-	void listsTheFirstPageWithDefaultsAndFixedOrder() throws Exception {
+	void listsTheFirstPageWithDefaultsOrderedByName() throws Exception {
 		UUID id = UUID.randomUUID();
 		LoyaltyCard card = CardTestData.card(id, "Albert Heijn");
 		when(service.list(any(Pageable.class))).thenReturn(new PageImpl<>(List.of(card), PageRequest.of(0, 20), 25));
@@ -70,18 +73,39 @@ class CardControllerTests {
 		Pageable requested = captor.getValue();
 		assertThat(requested.getPageNumber()).isZero();
 		assertThat(requested.getPageSize()).isEqualTo(20);
-		assertThat(requested.getSort()).isEqualTo(Sort.by("name", "id"));
+		assertThat(requested.getSort()).isEqualTo(CardSort.NAME.sort());
 	}
 
 	@Test
 	void passesExplicitPageAndSizeToTheService() throws Exception {
-		Pageable pageable = PageRequest.of(1, 5, Sort.by("name", "id"));
+		Pageable pageable = PageRequest.of(1, 5, CardSort.NAME.sort());
 		when(service.list(eq(pageable))).thenReturn(new PageImpl<>(List.of(), pageable, 5));
 
 		mvc.perform(get("/api/cards?page=1&size=5"))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.page").value(1))
 			.andExpect(jsonPath("$.size").value(5));
+	}
+
+	@ParameterizedTest
+	@CsvSource({ "name, NAME", "lastUsed, LAST_USED", "mostUsed, MOST_USED" })
+	void passesTheChosenOrderToTheService(String parameter, CardSort expected) throws Exception {
+		when(service.list(any(Pageable.class))).thenReturn(new PageImpl<>(List.of(), PageRequest.of(0, 20), 0));
+
+		mvc.perform(get("/api/cards").param("sort", parameter)).andExpect(status().isOk());
+
+		ArgumentCaptor<Pageable> captor = ArgumentCaptor.forClass(Pageable.class);
+		verify(service).list(captor.capture());
+		assertThat(captor.getValue().getSort()).isEqualTo(expected.sort());
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "colour", "NAME", "usageCount" })
+	void unknownSortIsProblem400(String parameter) throws Exception {
+		mvc.perform(get("/api/cards").param("sort", parameter))
+			.andExpect(status().isBadRequest())
+			.andExpect(content().contentTypeCompatibleWith(PROBLEM_JSON))
+			.andExpect(jsonPath("$.errors[0].field").value("sort"));
 	}
 
 	@Test

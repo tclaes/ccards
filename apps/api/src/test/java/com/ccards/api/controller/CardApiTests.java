@@ -244,4 +244,70 @@ class CardApiTests {
 		assertThat(usageCount(id)).isEqualTo(uses);
 	}
 
+	private ResponseSpec mark(String id) {
+		return client.put().uri("/api/cards/{id}/favorite", id).exchange();
+	}
+
+	private ResponseSpec unmark(String id) {
+		return client.delete().uri("/api/cards/{id}/favorite", id).exchange();
+	}
+
+	private ResponseSpec fetch(String id) {
+		return client.get().uri("/api/cards/{id}", id).exchange().expectStatus().isOk();
+	}
+
+	@Test
+	void aCardCanBeMarkedAndUnmarkedAsFavoriteRepeatedly() {
+		String id = createGroceries();
+		fetch(id).expectBody().jsonPath("$.favorite").isEqualTo(false);
+
+		mark(id).expectStatus().isNoContent();
+		mark(id).expectStatus().isNoContent();
+		fetch(id).expectBody().jsonPath("$.favorite").isEqualTo(true);
+
+		unmark(id).expectStatus().isNoContent();
+		unmark(id).expectStatus().isNoContent();
+		fetch(id).expectBody().jsonPath("$.favorite").isEqualTo(false);
+		assertThat(rows(id)).isEqualTo(1);
+	}
+
+	@Test
+	void favoriteOfUnknownCardIs404() {
+		String unknown = UUID.randomUUID().toString();
+
+		mark(unknown).expectStatus().isNotFound()
+			.expectHeader().contentType(MediaType.APPLICATION_PROBLEM_JSON);
+		unmark(unknown).expectStatus().isNotFound();
+	}
+
+	@Test
+	void markingIsNotAnEditAndAnOpenEditFormStillSaves() {
+		String id = createGroceries();
+		Object updatedAt = updatedAt(id);
+
+		mark(id).expectStatus().isNoContent();
+
+		fetch(id).expectBody().jsonPath("$.version").isEqualTo(0);
+		assertThat(updatedAt(id)).isEqualTo(updatedAt);
+		patch(id, """
+				{"version":0,"name":"Edited after marking"}""").expectStatus().isOk()
+			.expectBody().jsonPath("$.favorite").isEqualTo(true);
+	}
+
+	private Object updatedAt(String id) {
+		return jdbc.queryForObject("select updated_at from loyalty_card where id = ?", Object.class, UUID.fromString(id));
+	}
+
+	@Test
+	void favoriteCannotBeSetThroughAPatch() {
+		String id = createGroceries();
+
+		patch(id, """
+				{"version":0,"favorite":true}""")
+			.expectStatus().isBadRequest()
+			.expectBody().jsonPath("$.errors[0].field").isEqualTo("favorite");
+
+		fetch(id).expectBody().jsonPath("$.favorite").isEqualTo(false);
+	}
+
 }

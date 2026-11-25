@@ -6,7 +6,6 @@ import java.util.UUID;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.CacheControl;
@@ -26,6 +25,7 @@ import com.ccards.api.repository.LoyaltyCard;
 import com.ccards.api.service.BarcodeService;
 import com.ccards.api.service.CardData;
 import com.ccards.api.service.CardService;
+import com.ccards.api.service.CardSort;
 import com.ccards.api.service.ImageFormat;
 
 import tools.jackson.databind.JsonNode;
@@ -33,9 +33,6 @@ import tools.jackson.databind.JsonNode;
 @ConditionalOnProperty("spring.datasource.url") // no database in the default profile, so no cards
 @RestController
 public class CardController implements CardsApi {
-
-	/** Name first; id breaks ties so pages never overlap or skip cards. */
-	private static final Sort ORDER = Sort.by("name", "id");
 
 	private static final MediaType IMAGE_SVG = MediaType.valueOf("image/svg+xml");
 
@@ -55,8 +52,8 @@ public class CardController implements CardsApi {
 	}
 
 	@Override
-	public ResponseEntity<CardPage> listCards(Integer page, Integer size) {
-		Page<LoyaltyCard> cards = service.list(PageRequest.of(page, size, ORDER));
+	public ResponseEntity<CardPage> listCards(Integer page, Integer size, String sort) {
+		Page<LoyaltyCard> cards = service.list(PageRequest.of(page, size, CardSort.fromParameter(sort).sort()));
 		CardPage body = new CardPage(cards.map(mapper::toCard).getContent(), cards.getNumber(), cards.getSize(),
 				cards.getTotalElements(), cards.getTotalPages());
 		return ResponseEntity.ok(body);
@@ -112,6 +109,18 @@ public class CardController implements CardsApi {
 	@Override
 	public ResponseEntity<Void> registerCardUsage(UUID id) {
 		service.recordUse(id);
+		return ResponseEntity.noContent().build();
+	}
+
+	@Override
+	public ResponseEntity<Void> markCardFavorite(UUID id) {
+		service.setFavorite(id, true);
+		return ResponseEntity.noContent().build();
+	}
+
+	@Override
+	public ResponseEntity<Void> unmarkCardFavorite(UUID id) {
+		service.setFavorite(id, false);
 		return ResponseEntity.noContent().build();
 	}
 
