@@ -313,6 +313,21 @@ describe('CardsPage', () => {
     expect(document.activeElement).toBe(star('Colruyt'));
   });
 
+  it('keeps the focus on a moving star after the order was changed', async () => {
+    await showCards(card('Aldi', 'Aldi'), card('Colruyt', 'Colruyt'));
+    await chooseSort('mostUsed');
+    await showCards(card('Aldi', 'Aldi'), card('Colruyt', 'Colruyt'));
+    star('Colruyt').focus();
+    star('Colruyt').click();
+    await answerFavorite('Colruyt');
+
+    // The old list is still on screen; the focus is only lost when the new one moves the card.
+    star('Colruyt').blur();
+    await showCards(favorite('Colruyt'), card('Aldi', 'Aldi'));
+
+    expect(document.activeElement).toBe(star('Colruyt'));
+  });
+
   it('does not take the focus from where the user went meanwhile', async () => {
     await showCards(card('Aldi', 'Aldi'), card('Colruyt', 'Colruyt'));
     star('Colruyt').focus();

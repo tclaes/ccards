@@ -175,6 +175,8 @@ export class CardsPage {
   constructor() {
     afterRenderEffect(() => {
       this.items(); // Runs again once a new list is on screen.
+      // While fetching, the old list is still shown; after a failure there is none.
+      if (this.cards.status() !== 'resolved') return;
       this.restoreStarFocus();
       this.announceSort();
     });
@@ -214,8 +216,7 @@ export class CardsPage {
 
   private announceSort(): void {
     const sort = this.sortToAnnounce;
-    // A failed fetch leaves it pending, so a successful retry announces it.
-    if (!sort || this.cards.status() !== 'resolved') return;
+    if (!sort) return;
     this.sortToAnnounce = undefined;
     const count = this.items().length;
     const cards = count === 1 ? '1 card' : `${count} cards`;
