@@ -340,6 +340,70 @@ describe('CardsPage', () => {
     expect(document.activeElement).toBe(sortSelect());
   });
 
+  const isBlocked = (name: string) =>
+    star(name).getAttribute('aria-disabled') === 'true';
+
+  const noFavoriteRequest = () =>
+    http.expectNone((r) => r.url.endsWith('/favorite'));
+
+  it('ignores a star from the press until the list shows the change', async () => {
+    await showCards(card('Aldi', 'Aldi'));
+    star('Aldi').focus();
+
+    star('Aldi').click();
+    await settle();
+    const mark = favoriteRequest('Aldi');
+    star('Aldi').click();
+    noFavoriteRequest();
+    expect(isBlocked('Aldi')).toBe(true);
+    expect(star('Aldi').disabled).toBe(false);
+    expect(document.activeElement).toBe(star('Aldi'));
+
+    mark.flush(null, { status: 204, statusText: 'No Content' });
+    await settle();
+    star('Aldi').click();
+    noFavoriteRequest();
+    expect(isBlocked('Aldi')).toBe(true);
+
+    await showCards(favorite('Aldi'));
+    expect(star('Aldi').hasAttribute('aria-disabled')).toBe(false);
+    star('Aldi').click();
+    expect(await answerFavorite('Aldi')).toBe('DELETE');
+    await showCards(card('Aldi', 'Aldi'));
+  });
+
+  it('keeps the other stars usable, each blocked until its own change is shown', async () => {
+    await showCards(card('Aldi', 'Aldi'), card('Colruyt', 'Colruyt'));
+
+    star('Aldi').click();
+    const slow = favoriteRequest('Aldi');
+    star('Colruyt').click();
+    await answerFavorite('Colruyt');
+    await showCards(favorite('Colruyt'), card('Aldi', 'Aldi'));
+
+    expect(isBlocked('Colruyt')).toBe(false);
+    expect(isBlocked('Aldi')).toBe(true);
+
+    slow.flush(null, { status: 204, statusText: 'No Content' });
+    await settle();
+    await showCards(favorite('Aldi'), favorite('Colruyt'));
+    expect(isBlocked('Aldi')).toBe(false);
+  });
+
+  it('releases a star when the list with its change only arrives after a retry', async () => {
+    await showCards(card('Aldi', 'Aldi'));
+    star('Aldi').click();
+    await answerFavorite('Aldi');
+    pendingRequest().flush(...serverError);
+    await settle();
+
+    el.querySelector('button')?.click();
+    await settle();
+    await showCards(favorite('Aldi'));
+
+    expect(isBlocked('Aldi')).toBe(false);
+  });
+
   it('keeps the cards and shows a notification when saving a favorite fails', async () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     await showCards(card('Aldi', 'Aldi'));
@@ -350,6 +414,7 @@ describe('CardsPage', () => {
 
     expect(names()).toEqual(['Aldi']);
     expect(star('Aldi').getAttribute('aria-pressed')).toBe('false');
+    expect(isBlocked('Aldi')).toBe(false);
     expect(TestBed.inject(NotificationService).notifications()).toHaveLength(1);
     expect(warn).toHaveBeenCalled();
     http.verify();

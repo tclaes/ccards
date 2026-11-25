@@ -83,6 +83,7 @@ const PAGE_SIZE = 100;
                 class="corner favorite"
                 [attr.aria-label]="'Favorite ' + card.name"
                 [attr.aria-pressed]="card.favorite"
+                [attr.aria-disabled]="blockedStars().has(card.id) || null"
                 (click)="toggleFavorite(card, star)"
               >
                 <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -169,6 +170,15 @@ export class CardsPage {
   /** An order the user just chose, until its list is on screen and announced. */
   private sortToAnnounce?: CardSort;
 
+  /**
+   * Cards whose star ignores presses: their favorite is being saved, or the list that
+   * shows it has not arrived. Until then the card on screen holds the old mark.
+   */
+  protected readonly blockedStars = signal<ReadonlySet<string>>(new Set());
+
+  /** Blocked cards that are saved on the server, so the next list releases them. */
+  private readonly savedCards = new Set<string>();
+
   /** A star that had focus when its card changed: moving it in the list drops the focus. */
   private starToRefocus?: HTMLButtonElement;
 
@@ -177,6 +187,7 @@ export class CardsPage {
       this.items(); // Runs again once a new list is on screen.
       // While fetching, the old list is still shown; after a failure there is none.
       if (this.cards.status() !== 'resolved') return;
+      this.releaseSavedStars();
       this.restoreStarFocus();
       this.announceSort();
     });
@@ -190,20 +201,39 @@ export class CardsPage {
   }
 
   protected toggleFavorite(card: Card, star: HTMLButtonElement): void {
+    if (this.blockedStars().has(card.id)) return;
+    this.blockedStars.update((blocked) => new Set(blocked).add(card.id));
     this.favoriteChange(card).subscribe({
       next: () => {
+        this.savedCards.add(card.id);
         if (this.document.activeElement === star) this.starToRefocus = star;
         this.revision.update((revision) => revision + 1);
       },
       // The interceptor tells the user; the list stays as it was.
-      error: (error: unknown) =>
-        console.warn('Could not change the favorite', error),
+      error: (error: unknown) => {
+        this.releaseStars([card.id]);
+        console.warn('Could not change the favorite', error);
+      },
     });
   }
 
   private favoriteChange(card: Card) {
     if (card.favorite) return this.api.unmarkCardFavorite(card.id);
     return this.api.markCardFavorite(card.id);
+  }
+
+  private releaseSavedStars(): void {
+    if (this.savedCards.size === 0) return;
+    this.releaseStars(this.savedCards);
+    this.savedCards.clear();
+  }
+
+  private releaseStars(cardIds: Iterable<string>): void {
+    this.blockedStars.update((blocked) => {
+      const stillBlocked = new Set(blocked);
+      for (const id of cardIds) stillBlocked.delete(id);
+      return stillBlocked;
+    });
   }
 
   private restoreStarFocus(): void {

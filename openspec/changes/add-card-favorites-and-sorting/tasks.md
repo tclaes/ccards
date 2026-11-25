@@ -34,3 +34,8 @@
 - [x] 6.1 Announce a newly chosen sort order from a visually hidden status element on the overview; verify specs cover the text and count, one card, nothing before the list arrives, on first load or after a favourite change, repeated changes, and a failed fetch followed by a retry
 - [x] 6.2 Add the global `:focus-visible` ring with its tokens and round the tile link; verify `npx nx lint web` passes and, in the browser, that the ring shows on a star and edit button over light and dark tiles, on a tile, on "Add card", on the sort control and on a form field
 - [x] 6.3 Run `npx nx affected -t lint test build`, then `/sentry-skills:code-simplifier` and `/sentry-skills:code-review` on the new changes, and re-run the checks
+
+## 7. Block the star while saving
+
+- [x] 7.1 Ignore presses on a card's star from the request until the list shows the change, with `aria-disabled` and dimmed; verify specs cover a second press during the request and during the reload, release after the new list and after a failure, other cards staying available, and kept focus
+- [x] 7.2 Run `npx nx affected -t lint test build`, check in the browser, and run `/sentry-skills:code-simplifier` and `/sentry-skills:code-review` on the change

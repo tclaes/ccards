@@ -63,7 +63,7 @@ The OpenAPI contract SHALL describe both favourite operations with their 204, 40
 - **THEN** it defines `PUT` and `DELETE /api/cards/{id}/favorite` with operation ids `markCardFavorite` and `unmarkCardFavorite`
 
 ### Requirement: Favourite button on the tile
-Each tile on the overview SHALL have a star button in its top-right corner that shows whether the card is a favourite, by shape and not by colour alone, and toggles it when selected. Selecting it SHALL NOT open the card. After a successful change the list SHALL show the new order.
+Each tile on the overview SHALL have a star button in its top-right corner that shows whether the card is a favourite, by shape and not by colour alone, and toggles it when selected. Selecting it SHALL NOT open the card. After a successful change the list SHALL show the new order. Until then that card's star SHALL ignore further selections.
 
 #### Scenario: Mark from the overview
 - **WHEN** the user selects the star of a card that is not a favourite
@@ -87,4 +87,16 @@ Each tile on the overview SHALL have a star button in its top-right corner that 
 
 #### Scenario: Saving fails
 - **WHEN** the favourite request fails
-- **THEN** an error notification is shown, the cards stay on screen and the star keeps showing the stored state
+- **THEN** an error notification is shown, the cards stay on screen, the star keeps showing the stored state and can be selected again
+
+#### Scenario: Selected again while saving
+- **WHEN** the user selects a star again before the list shows the change
+- **THEN** no second request is sent, and the star is shown dimmed, is reported as unavailable and keeps keyboard focus
+
+#### Scenario: Available again
+- **WHEN** the list with the change is shown
+- **THEN** the star can be selected again
+
+#### Scenario: Other cards stay available
+- **WHEN** the favourite of one card is being saved
+- **THEN** the stars of the other cards can be selected
